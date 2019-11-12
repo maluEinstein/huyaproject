@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../static/echarts.min.js"></script>
+</head>
+<body>
+<div id="chart" style="width:1500px;height:800px;"></div>
+<div id="chart1" style="width:1500px;height:800px;"></div>
+<p id="display"></p>
+<button onclick="displayData();">查询生成数据</button>
+<br><br><br>
+<input type="file" name="userfile" id="userfile">
+<button onclick="upload();">上传</button>
+<br>
+<script>
+    gameName = [];
+    gameRoomNumber = [];
+    gameHot = [];
+    gamedata = [];
+
+    function drawchart1() {
+        console.log(gamedata)
+        console.log(gameName)
+        var ct = echarts.init(document.getElementById("chart1"));
+        var option = {
+            title: {
+                text: '虎牙板块人气分析',
+                subtext: '数据来自虎牙',
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                data: gameName
+            },
+            series: [
+                {
+                    name: '热度',
+                    type: 'pie',
+                    radius: '55%',
+                    center: ['50%', '60%'],
+                    data: gamedata,
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+        ct.setOption(option);
+    }
+
+
+    function drawchart() {
+        var ct = echarts.init(document.getElementById("chart"));
+        var option = {
+            title: {
+                text: '游戏数据计算',
+            },
+            tooltip: {},
+            legend: {
+                data: ['gameRoomNumber', 'gameHot']
+            },
+            xAxis: {
+                data: gameName
+            },
+            yAxis: [
+                {
+                name: '热度',
+                type: 'value'
+            },
+                {
+                    name: '房间数',
+                    nameLocation: 'start',
+                    type: 'value'
+                }],
+            series: [
+                {
+                    name: 'gameRoomNumber',
+                    type: 'line',
+                    yAxisIndex:1,
+                    smooth: true,
+                    data: gameRoomNumber
+                },
+                {
+                    name: 'gameHot',
+                    type: 'line',
+                    smooth: true,
+                    data: gameHot
+                }
+            ]
+        };
+        ct.setOption(option);
+    }
+
+    function displayData() {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                msg = JSON.parse(xmlhttp.responseText);
+                gameName = msg.gameName;
+                gameRoomNumber = msg.gameRoom;
+                gameHot = msg.gameHot;
+                console.log(gameHot);
+                console.log(gameName);
+                console.log(gameRoomNumber);
+
+                for (i = 0; i < gameName.length; i++) {
+                    map = {}
+                    map['value'] = gameHot[i];
+                    map['name'] = gameName[i];
+                    gamedata.push(map)
+                }
+                drawchart1();
+                drawchart();
+            }
+        };
+        xmlhttp.open('post', 'http://127.0.0.1:5000/display');
+        xmlhttp.send();
+    }
+
+
+    function upload() {
+        var userfile = document.getElementById('userfile');
+        var formData = new FormData();
+        formData.append("file", userfile.files[0]);
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+                document.getElementById('display').innerText = xmlhttp.responseText;
+            }
+        };
+        xmlhttp.open("POST", "http://127.0.0.1:5000/upload");
+        xmlhttp.overrideMimeType('text/html;charset=bg2312');
+        xmlhttp.send(formData);
+    }
+</script>
+</body>
+</html>
