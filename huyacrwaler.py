@@ -53,7 +53,7 @@ class crawlerThread(threading.Thread):
             day = str(self.wtime).split(' ')[0]
             hour = str(self.wtime).split(' ')[1]
             path = 'd:/test/' + day + '/' + hour + '.txt'  # Windows环境设置生成的文件路径
-            # path = '/home/pyhoncraw/test/' + day + '/' + hour + '.txt'  # Linux环境设置生成的文件路径
+            # path = '/home/data/' + day + '/' + hour + '.txt'  # Linux环境设置生成的文件路径
             paths = path.split('/')
             dirpath = ''
             for i in paths:  # 去掉最后的xxx.txt
@@ -107,9 +107,11 @@ while (True):
         gidlist = []
         r = requests.get('https://www.huya.com/g', headers=headers)
         selector = html.etree.HTML(r.text)
-        l = selector.xpath('//div[@class="box-bd"]/ul/li/@gid')
+        l = selector.xpath('//div[@class="box-bd"]/ul/li/a/@report')
         for i in range(len(l)):
-            gidlist.append(l[i])
+            tmp = str(l[i])
+            tmp = eval(tmp)
+            gidlist.append(tmp["game_id"])
         print(gidlist)
         print('开始时间：' + time.strftime('%Y-%m-%d %H:%M:%S', oldTime))
         wTime = time.strftime('%Y-%m-%d %H', time.localtime())
