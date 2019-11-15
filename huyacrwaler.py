@@ -52,8 +52,8 @@ class crawlerThread(threading.Thread):
             lock.acquire()
             day = str(self.wtime).split(' ')[0]
             hour = str(self.wtime).split(' ')[1]
-            path = 'd:/test/' + day + '/' + hour + '.txt'  # Windows环境设置生成的文件路径
-            # path = '/home/data/' + day + '/' + hour + '.txt'  # Linux环境设置生成的文件路径
+            # path = 'd:/test/' + day + '/' + hour + '.txt'  # Windows环境设置生成的文件路径
+            path = '/root/data/' + day + '/' + hour + '.txt'  # Linux环境设置生成的文件路径
             paths = path.split('/')
             dirpath = ''
             for i in paths:  # 去掉最后的xxx.txt
@@ -110,6 +110,7 @@ while (True):
         l = selector.xpath('//div[@class="box-bd"]/ul/li/a/@report')
         for i in range(len(l)):
             tmp = str(l[i])
+            # 使用eval转化str为字典格式进行爬取
             tmp = eval(tmp)
             gidlist.append(tmp["game_id"])
         print(gidlist)
