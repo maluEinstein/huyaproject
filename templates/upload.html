@@ -6,23 +6,23 @@
     <script src="../static/echarts.min.js"></script>
 </head>
 <body>
-<div id="chart" style="width:1500px;height:800px;"></div>
-<div id="chart1" style="width:1500px;height:800px;"></div>
+
 <p id="display"></p>
 <button onclick="displayData();">查询生成数据</button>
 <br><br><br>
 <input type="file" name="userfile" id="userfile">
 <button onclick="upload();">上传</button>
 <br>
+<div id="chart" style="width:1500px;height:800px;"></div>
+<div id="chart1" style="width:1500px;height:800px;"></div>
 <script>
     gameName = [];
     gameRoomNumber = [];
     gameHot = [];
     gamedata = [];
+    gameAve = [];
 
     function drawchart1() {
-        console.log(gamedata)
-        console.log(gameName)
         var ct = echarts.init(document.getElementById("chart1"));
         var option = {
             title: {
@@ -68,28 +68,28 @@
             },
             tooltip: {},
             legend: {
-                data: ['gameRoomNumber', 'gameHot']
+                data: ['gameAve', 'gameHot']
             },
             xAxis: {
                 data: gameName
             },
             yAxis: [
                 {
-                name: '热度',
-                type: 'value'
-            },
+                    name: '热度',
+                    type: 'value'
+                },
                 {
-                    name: '房间数',
+                    name: '房间平均热度',
                     nameLocation: 'start',
                     type: 'value'
                 }],
             series: [
                 {
-                    name: 'gameRoomNumber',
+                    name: 'gameAve',
                     type: 'line',
-                    yAxisIndex:1,
+                    yAxisIndex: 1,
                     smooth: true,
-                    data: gameRoomNumber
+                    data: gameAve
                 },
                 {
                     name: 'gameHot',
@@ -106,14 +106,15 @@
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+
                 msg = JSON.parse(xmlhttp.responseText);
+                console.log(xmlhttp.responseText)
+                console.log(xmlhttp.responseType)
+
                 gameName = msg.gameName;
+                gameAve = msg.gameAve;
                 gameRoomNumber = msg.gameRoom;
                 gameHot = msg.gameHot;
-                console.log(gameHot);
-                console.log(gameName);
-                console.log(gameRoomNumber);
-
                 for (i = 0; i < gameName.length; i++) {
                     map = {}
                     map['value'] = gameHot[i];
