@@ -47,7 +47,10 @@ class crawlerThread(threading.Thread):
                         gameName = str(j['gameFullName'])
                         gameRoom = str(j['roomName'])
                         RoomID = str(j['profileRoom'])
-                        res += gameName + '&' + gameRoom + '&' + RoomID + '&' + zhuoboname + '&' + str(gameHot) + '\n'
+                        day = str(self.wtime).split(' ')[0]
+                        hour = str(self.wtime).split(' ')[1]
+                        res += day + '&' + hour + '&' + gameName + '&' + gameRoom + '&' + RoomID + '&' + zhuoboname + '&' + str(
+                            gameHot) + '\n'
             # 不清楚要不要同步牺牲效率保证别出问题
             lock.acquire()
             day = str(self.wtime).split(' ')[0]
@@ -93,14 +96,16 @@ class crawlerThread(threading.Thread):
 #
 
 a = '2000-1-1 00:00:00'
-timeInterval = 10  # 时间间隔
+timeInterval = 1  # 时间间隔
 oldTime = time.strptime(a, '%Y-%m-%d %H:%M:%S')
 while (True):
-    if int(time.strftime("%H", time.localtime())) > 16 or int(time.strftime("%H", time.localtime())) < 2:
-        # 16点到23点 0点到2点高峰段一小时爬一次 正常时间3小时爬一次
-        timeInterval = 1
-    else:
-        timeInterval = 3
+    # if int(time.strftime("%H", time.localtime())) > 16 or int(time.strftime("%H", time.localtime())) < 2:
+    #     # 16点到23点 0点到2点高峰段一小时爬一次 正常时间3小时爬一次
+    #     timeInterval = 1
+    # else:
+    #     timeInterval = 3
+    # 修改为每个小时都爬取一次
+
     if abs(int(time.strftime("%H", time.localtime())) - int(time.strftime("%H", oldTime))) >= timeInterval:
         # 通过绝对值来处理时间到第二天的时候oldTime的H会大于localtime的H
         oldTime = time.localtime()

@@ -8,7 +8,6 @@
 #         print(path)
 #         with open(path, 'r', encoding="UTF-8") as fp:
 #             r = fp.readlines()
-#         r = map(lambda x: str(day + '&' + time + '&' + x), r)
 #         with open('C:/Users/hasee/Downloads/2/' + day + '.txt', 'a', encoding="UTF-8") as fw:
 #             fw.writelines(list(r))
 import pymysql
