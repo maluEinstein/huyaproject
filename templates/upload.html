@@ -8,12 +8,30 @@
 <body>
 
 <p id="display"></p>
-<button onclick="displayData();">查询生成数据</button>
-<br><br><br>
+
+<BR>
 <input type="file" name="userfile" id="userfile">
 <button onclick="upload();">上传</button>
 <br>
-<div id="chart" style="width:1500px;height:800px;"></div>
+<progress id="progressBar" value="0" max="100" style="width: 300px;"></progress>
+<br>
+<br>
+<button onclick="displayPYData();">查询生成数据</button>
+<br>
+<label>日期：</label><input type="text" id="day"><br>
+<label>时间：</label><input type="text" id="hour"><br>
+<button onclick="displayMysqlDatabytime()">查询</button>
+<br>
+
+<label>直播分类：</label><input type="text" id="game_type"><br>
+<button onclick="displayMysqlDatabytype()">查询</button>
+<br>
+
+<label>直播间查询：</label><input type="text" id="room_id"><br>
+<button onclick="displayMysqlDatabyroom()">查询</button>
+<br>
+
+<div id="chart" style="width:2000px;height:800px;"></div>
 <div id="chart1" style="width:1500px;height:800px;"></div>
 <script>
     gameName = [];
@@ -21,6 +39,188 @@
     gameHot = [];
     gamedata = [];
     gameAve = [];
+    gametime = []
+
+    function displayMysqlDatabytime() {
+        gameName = [];
+        gameRoomNumber = [];
+        gameHot = [];
+        gamedata = [];
+        gameAve = [];
+        gametime = [];
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                msg = JSON.parse(xmlhttp.responseText);
+                gameHot = msg.gameHot
+                gameName = msg.gameName
+                drawchart3()
+            }
+        };
+        var day = document.getElementById("day").value;
+        var hour = document.getElementById("hour").value;
+        xmlhttp.open('post', 'http://127.0.0.1:5000/displayMysqlDatabytime');
+        xmlhttp.send("str1=" + day + "&hour=" + hour);
+    }
+
+
+    function displayMysqlDatabytype() {
+        gameName = [];
+        gameRoomNumber = [];
+        gameHot = [];
+        gamedata = [];
+        gameAve = [];
+        gametime = []
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                msg = JSON.parse(xmlhttp.responseText);
+                gameHot = msg.gameHot
+                gametime = msg.gametime
+                drawchart2()
+            }
+        };
+        var type = document.getElementById("game_type").value
+        xmlhttp.open('post', 'http://127.0.0.1:5000/displayMysqlDatabytype');
+        xmlhttp.send("str1=" + type);
+    }
+
+    function displayMysqlDatabyroom() {
+        gameName = [];
+        gameRoomNumber = [];
+        gameHot = [];
+        gamedata = [];
+        gameAve = [];
+        gametime = []
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                msg = JSON.parse(xmlhttp.responseText);
+                gameHot = msg.gameHot
+                gametime = msg.gametime
+                drawchart2()
+            }
+        };
+        var room_id = document.getElementById("room_id").value
+        xmlhttp.open('post', 'http://127.0.0.1:5000/displayMysqlDatabyroom');
+        xmlhttp.send("str1=" + room_id);
+    }
+
+    function displayPYData() {
+        gameName = [];
+        gameRoomNumber = [];
+        gameHot = [];
+        gamedata = [];
+        gameAve = [];
+        gametime = [];
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                msg = JSON.parse(xmlhttp.responseText);
+
+                gameName = msg.gameName;
+                gameAve = msg.gameAve;
+                gameRoomNumber = msg.gameRoom;
+                gameHot = msg.gameHot;
+                console.log(gameName)
+                for (i = 0; i < gameName.length; i++) {
+                    map = {}
+                    map['value'] = gameHot[i];
+                    map['name'] = gameName[i];
+                    gamedata.push(map)
+                }
+                drawchart1();
+                drawchart();
+            }
+        };
+        xmlhttp.open('post', 'http://127.0.0.1:5000/displayPYData');
+        xmlhttp.send();
+    }
+
+    function upload() {
+        var userfile = document.getElementById('userfile');
+        var formData = new FormData();
+        formData.append("file", userfile.files[0]);
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+                document.getElementById('display').innerText = xmlhttp.responseText;
+            }
+        };
+        xmlhttp.open("POST", "http://127.0.0.1:5000/upload");
+        xmlhttp.overrideMimeType('text/html;charset=bg2312');
+        xmlhttp.upload.onprogress = progressF;
+        xmlhttp.send(formData);
+    }
+
+    function progressF(evt) {
+        var progressBar = document.getElementById("progressBar");
+        if (evt.lengthComputable) {
+            progressBar.max = evt.total;
+            progressBar.value = evt.loaded;
+        }
+    }
+
+    function drawchart3() {
+        var ct = echarts.init(document.getElementById("chart"));
+        var option = {
+            title: {
+                text: '游戏数据计算',
+            },
+            tooltip: {},
+            legend: {
+                data: ['gameHot']
+            },
+            xAxis: {
+                data: gameName
+            },
+            yAxis: [
+                {
+                    name: '热度',
+                    type: 'value'
+                }],
+            series: [
+                {
+                    name: 'gameHot',
+                    type: 'line',
+                    smooth: true,
+                    data: gameHot
+                }
+            ]
+        };
+        ct.setOption(option);
+    }
+
+
+    function drawchart2() {
+        var ct = echarts.init(document.getElementById("chart"));
+        var option = {
+            title: {
+                text: '游戏数据计算',
+            },
+            tooltip: {},
+            legend: {
+                data: ['gameHot']
+            },
+            xAxis: {
+                data: gametime
+            },
+            yAxis: [
+                {
+                    name: '热度',
+                    type: 'value'
+                }],
+            series: [
+                {
+                    name: 'gameHot',
+                    type: 'line',
+                    smooth: true,
+                    data: gameHot
+                }
+            ]
+        };
+        ct.setOption(option);
+    }
 
     function drawchart1() {
         var ct = echarts.init(document.getElementById("chart1"));
@@ -58,7 +258,6 @@
         };
         ct.setOption(option);
     }
-
 
     function drawchart() {
         var ct = echarts.init(document.getElementById("chart"));
@@ -100,49 +299,6 @@
             ]
         };
         ct.setOption(option);
-    }
-
-    function displayData() {
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-
-                msg = JSON.parse(xmlhttp.responseText);
-                console.log(xmlhttp.responseText)
-                console.log(xmlhttp.responseType)
-
-                gameName = msg.gameName;
-                gameAve = msg.gameAve;
-                gameRoomNumber = msg.gameRoom;
-                gameHot = msg.gameHot;
-                for (i = 0; i < gameName.length; i++) {
-                    map = {}
-                    map['value'] = gameHot[i];
-                    map['name'] = gameName[i];
-                    gamedata.push(map)
-                }
-                drawchart1();
-                drawchart();
-            }
-        };
-        xmlhttp.open('post', 'http://127.0.0.1:5000/display');
-        xmlhttp.send();
-    }
-
-
-    function upload() {
-        var userfile = document.getElementById('userfile');
-        var formData = new FormData();
-        formData.append("file", userfile.files[0]);
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-                document.getElementById('display').innerText = xmlhttp.responseText;
-            }
-        };
-        xmlhttp.open("POST", "http://127.0.0.1:5000/upload");
-        xmlhttp.overrideMimeType('text/html;charset=bg2312');
-        xmlhttp.send(formData);
     }
 </script>
 </body>
