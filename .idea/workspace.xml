@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ed841c26-2694-4120-9dff-0ce1e79eaeec" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/huyacrwaler.py" beforeDir="false" afterPath="$PROJECT_DIR$/huyacrwaler.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/test1.py" beforeDir="false" afterPath="$PROJECT_DIR$/test1.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -49,7 +52,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Flask server.huyaproject">
+  <component name="RunManager" selected="Python.test1">
     <configuration name="11" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="huyaproject" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -192,12 +195,19 @@
       <workItem from="1575717706003" duration="11055000" />
       <workItem from="1575767697359" duration="144000" />
       <workItem from="1575771030444" duration="2117000" />
-      <workItem from="1575863902000" duration="515000" />
+      <workItem from="1575863902000" duration="1103000" />
+      <workItem from="1575870910494" duration="1171000" />
+      <workItem from="1575882468745" duration="753000" />
+      <workItem from="1575883830684" duration="672000" />
+      <workItem from="1576197089708" duration="3619000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="requirements.txt" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -213,9 +223,9 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/huyaproject$huyaproject.coverage" NAME="huyaproject Coverage Results" MODIFIED="1575774058339" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/huyaproject$huyaproject.coverage" NAME="huyaproject Coverage Results" MODIFIED="1575871019230" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
     <SUITE FILE_PATH="coverage/huyaproject$test.coverage" NAME="test Coverage Results" MODIFIED="1573523344701" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/huyaproject$test1.coverage" NAME="test1 Coverage Results" MODIFIED="1575683744571" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/huyaproject$test1.coverage" NAME="test1 Coverage Results" MODIFIED="1575884152707" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/huyaproject$huyacrwaler.coverage" NAME="huyacrwaler Coverage Results" MODIFIED="1573723522930" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/huyaproject$11.coverage" NAME="11 Coverage Results" MODIFIED="1573723383343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>

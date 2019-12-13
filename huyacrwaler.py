@@ -104,8 +104,8 @@ while (True):
     #     timeInterval = 1
     # else:
     #     timeInterval = 3
-    # 修改为每个小时都爬取一次
 
+    # 修改为每个小时都爬取一次
     if abs(int(time.strftime("%H", time.localtime())) - int(time.strftime("%H", oldTime))) >= timeInterval:
         # 通过绝对值来处理时间到第二天的时候oldTime的H会大于localtime的H
         oldTime = time.localtime()

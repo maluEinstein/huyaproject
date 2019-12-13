@@ -46,7 +46,7 @@ def displayMysqlDatabytype():
     gametime = []
     game_name = str(request.data).split("'")[1].split('=')[1]
     print(game_name)
-    game_name="梦三国"
+    game_name = "梦三国"
     sql = 'SELECT * FROM `room_hot_analsis` where game_name="' + game_name + '" ORDER BY day,hour '
     for i in toSQL(sql):
         print(i[3])
@@ -61,16 +61,16 @@ def displayMysqlDatabytype():
 @cross_origin()
 def displayMysqlData2():
     result.clear()
-    gameHot=[]
-    gametime=[]
+    gameHot = []
+    gametime = []
     print(str(request.data))
-    room_id=str(request.data).split("'")[1].split('=')[1]
-    sql='SELECT * FROM `basedata` WHERE room_id='+room_id+' ORDER BY day,hour'
+    room_id = str(request.data).split("'")[1].split('=')[1]
+    sql = 'SELECT * FROM `basedata` WHERE room_id=' + room_id + ' ORDER BY day,hour'
     for i in toSQL(sql):
         gameHot.append(str(i[6]))
         gametime.append(str(i[0]) + " " + str(i[1]))
-    result["gameHot"]=gameHot
-    result["gametime"]=gametime
+    result["gameHot"] = gameHot
+    result["gametime"] = gametime
     return result
 
 
