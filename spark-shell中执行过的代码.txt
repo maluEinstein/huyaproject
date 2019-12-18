@@ -1,0 +1,107 @@
+
+
+val mysqltest=spark.read.format("jdbc").
+      option("url","jdbc:mysql://192.168.20.43:3306/yatop_train").
+	  option("driver","com.mysql.cj.jdbc.Driver").
+      option("dbtable","test2").
+      option("user","root").
+      option("password","a123456").
+      load()
+
+
+
+#对RDD的分组操作
+val data=tdata.filter(x=>x.split("&").length==7)
+val msg=data.map(line=>(line.split("&")(0),line.split("&")(1)+line.split("&")(2)+line.split("&")(6)))
+val t=msg.groupByKey()
+
+	  
+#新建一个数据库连接prop
+import java.util.Properties
+val prop=new Properties()
+prop.put("user","hadoop")
+prop.put("password","Hadoop@123")
+prop.put("driver","com.mysql.jdbc.Driver")
+
+
+
+
+
+#HDFS写入mysql案例
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.Row
+val sdata =sc.textFile("hdfs://master1:9000/tmp/data/")
+val data=sdata.filter(x=>x.split("&").length==7)
+val msg=data.map(line=>line.split("&"))
+val rowRDD=msg.map(p=>Row(p(0),p(1).toInt,p(2),p(3),p(4).toInt,p(5),p(6).toInt))
+val schema=StructType(List(StructField("day",StringType,true),StructField("hour",IntegerType,true),StructField("game_name",StringType,true),StructField("room_name",StringType,true),StructField("room_id",IntegerType,true),StructField("gamer_name",StringType,true),StructField("room_hot",IntegerType,true)))
+val dataDF=spark.createDataFrame(rowRDD,schema)
+import java.util.Properties
+val prop=new Properties()
+prop.put("user","hadoop")
+prop.put("password","Hadoop@123")
+prop.put("driver","com.mysql.jdbc.Driver")
+dataDF.write.mode("append").jdbc("jdbc:mysql://slave1:3306/huya?useUnicode=true&characterEncoding=UTF-8","huya.basedata",prop)
+res.write.jdbc("jdbc:mysql://slave1:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT","room_hot_analsis",prop)
+
+
+
+
+
+
+#数据库读取成DF操作再写回新的表
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.Row
+import java.util.Properties
+val dataDF=spark.read.format("jdbc").
+      option("url","jdbc:mysql://slave1:3306/huya?useUnicode=true&characterEncoding=UTF-8").
+	  option("driver","com.mysql.jdbc.Driver").
+      option("dbtable","basedata").
+      option("user","hadoop").
+      option("password","Hadoop@123").
+      load()
+val needdata=dataDF.select("day","hour","game_name","room_hot")
+val res=needdata.groupBy("day","hour","game_name").agg("room_hot"->"avg")
+val prop=new Properties()
+prop.put("user","hadoop")
+prop.put("password","Hadoop@123")
+prop.put("driver","com.mysql.jdbc.Driver")
+res.write.jdbc("jdbc:mysql://slave1:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT","room_hot_analsis",prop)
+
+
+
+
+
+
+#特定分类的中文分词+DF-IDF做特征提取
+import java.util.Properties
+import org.apache.spark.sql.types._
+import org.apache.spark.sql.Row
+def mkSentence(data: String,MaxLen:Int): String={
+          var res = new String()
+          for(step <- 1 until(MaxLen+1)){
+            for (index <- 0 until(data.length-step+1)){
+              res+=(data.substring(index,index+step))
+              res+=(" ")
+            }
+          }
+          res
+        }
+val selectGameName="英雄联盟"
+val sourcedata=sc.textFile("file:///mnt/share/ttt.txt")
+val afterfilterdata=sourcedata.filter(line=>line.split("&").length == 7))
+val usedata=afterfilterdata.map(line=>(line.split("&")(1),line.split("&")(3)+line.split("&")(5)))
+val finaldata=usedata.mapValues(x=>mkSentence(x.toString().trim(),4))
+import org.apache.spark.ml.feature.{HashingTF,IDF,Tokenizer}
+val schema=StructType(List(StructField("game_name",StringType,true),StructField("sentence",StringType,true)))
+val rowRDD=finaldata.map(p=>Row(p._1,p._2))
+val dataDF=spark.createDataFrame(rowRDD,schema)
+val tokenizer=new Tokenizer().setInputCol("sentence").setOutputCol("words")
+val wordsData=tokenizer.transform(dataDF)
+val hashingTF=new HashingTF().
+setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(5000)
+val featurizedData=hashingTF.transform(wordsData)
+val idf=new IDF().setInputCol("rawFeatures").setOutputCol("features")
+val idfModel=idf.fit(featurizedData)
+val rData=idfModel.transform(featurizedData)
+rData.select("features","words").show(false)
