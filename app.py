@@ -130,7 +130,11 @@ def calData():
 
 
 def toSQL(sql):
-    conn = pymysql.connect(host='192.168.56.112', port=3306, user='hadoop', password='Hadoop@123', db='huya',
+    # 本地运行是访问的数据库
+    # conn = pymysql.connect(host='192.168.56.112', port=3306, user='hadoop', password='Hadoop@123', db='huya',
+    #                        charset='utf8')
+    # 阿里云上运行访问的数据库
+    conn = pymysql.connect(host='localhost', port=3306, user='hadoop', password='Hadoop@123', db='huya',
                            charset='utf8')
     cursor = conn.cursor()
     cursor.execute(sql)

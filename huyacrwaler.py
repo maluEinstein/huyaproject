@@ -49,7 +49,8 @@ class crawlerThread(threading.Thread):
                         RoomID = str(j['profileRoom'])
                         day = str(self.wtime).split(' ')[0]
                         hour = str(self.wtime).split(' ')[1]
-                        res += day + '&' + hour + '&' + gameName + '&' + gameRoom + '&' + RoomID + '&' + zhuoboname + '&' + str(
+                        res += day + '&' + hour + '&' + gameName + '&' + url.split("page=")[
+                            1] + '&' + gameRoom + '&' + RoomID + '&' + zhuoboname + '&' + str(
                             gameHot) + '\n'
             # 不清楚要不要同步牺牲效率保证别出问题
             lock.acquire()
@@ -135,4 +136,4 @@ while (True):
         t4.join()
         print('结束时间' + time.strftime('%Y-%m-%d %H:%M:%S', time.localtime()))
     else:
-        continue
+        time.sleep(1000)
