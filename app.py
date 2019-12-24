@@ -44,7 +44,7 @@ def displayMysqlDatabytype():
     result.clear()
     gameHot = []
     gametime = []
-    game_name = str(request.data).split("'")[1].split('=')[1]
+    game_name = str(request.data.decode("utf-8")).split('=')[1]
     print(game_name)
     game_name = "梦三国"
     sql = 'SELECT * FROM `room_hot_analsis` where game_name="' + game_name + '" ORDER BY day,hour '
