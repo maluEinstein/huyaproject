@@ -20,6 +20,42 @@ def display():
 
 
 # 查询mysql里的数据
+
+@app.route('/displayMysqlDatabyDay', methods=['POST'])
+@cross_origin()
+def displayMysqlDatabyDay():
+    result.clear()
+    gameName = ['星秀', '王者荣耀', '英雄联盟', '体育', '交友', '一起看', '户外', '绝地求生', '颜值']
+    gameHot1 = []
+    gameHot2 = []
+    gameHot3 = []
+    game_name = ''
+    day = str(request.data).split("'")[1].split('&')[0].split('=')[1]
+    sql1 = [(
+            'SELECT * FROM (SELECT game_name,SUM(`sum(room_hot)`) AS hot FROM (select * from `room_hot_analsis` where day= "' + \
+            day + '" and HOUR >= 6 AND HOUR <= 13) AS tmp group by game_name) AS t  WHERE game_name = "{}"').format(
+        str(i)) for i in gameName]
+    sql2 = [
+        'SELECT * FROM (SELECT game_name,SUM(`sum(room_hot)`) AS hot FROM (select * from `room_hot_analsis` where day= "' + \
+        day + '" and hour >= 14 and hour <= 21) AS tmp group by game_name) AS t WHERE game_name = "{}"'.format(str(i))
+        for i in gameName]
+    sql3 = [
+        'SELECT * FROM (SELECT game_name,SUM(`sum(room_hot)`) AS hot FROM (select * from `room_hot_analsis` where day= "' + \
+        day + '" and hour >= 22 or hour <= 5) AS tmp group by game_name) AS t WHERE game_name = "{}"'.format(str(i))
+        for i in gameName]
+    for i in sql1:
+        gameHot1.append(str(toSQL(i)[0][1]))
+    for i in sql2:
+        gameHot2.append(str(toSQL(i)[0][1]))
+    for i in sql3:
+        gameHot3.append(str(toSQL(i)[0][1]))
+    result["gameName"] = gameName
+    result['gameHot1'] = gameHot1
+    result['gameHot2'] = gameHot2
+    result['gameHot3'] = gameHot3
+    return result
+
+
 @app.route('/displayMysqlDatabytime', methods=['POST'])
 @cross_origin()
 def displayMysqlDatabytime():
@@ -45,8 +81,6 @@ def displayMysqlDatabytype():
     gameHot = []
     gametime = []
     game_name = str(request.data.decode("utf-8")).split('=')[1]
-    print(game_name)
-    game_name = "梦三国"
     sql = 'SELECT * FROM `room_hot_analsis` where game_name="' + game_name + '" ORDER BY day,hour '
     for i in toSQL(sql):
         print(i[3])
@@ -131,11 +165,11 @@ def calData():
 
 def toSQL(sql):
     # 本地运行是访问的数据库
-    # conn = pymysql.connect(host='192.168.56.112', port=3306, user='hadoop', password='Hadoop@123', db='huya',
-    #                        charset='utf8')
-    # 阿里云上运行访问的数据库
-    conn = pymysql.connect(host='localhost', port=3306, user='hadoop', password='Hadoop@123', db='huya',
+    conn = pymysql.connect(host='192.168.56.112', port=3306, user='hadoop', password='Hadoop@123', db='huya',
                            charset='utf8')
+    # 阿里云上运行访问的数据库
+    # conn = pymysql.connect(host='localhost', port=3306, user='hadoop', password='Hadoop@123', db='huya',
+    #                        charset='utf8')
     cursor = conn.cursor()
     cursor.execute(sql)
     return cursor.fetchall()
