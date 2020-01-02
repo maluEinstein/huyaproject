@@ -64,13 +64,12 @@ def displayMysqlDatabytime():
     gameHot = []
     day = str(request.data).split("'")[1].split('&')[0].split('=')[1]
     hour = str(request.data).split("'")[1].split('&')[1].split('=')[1]
-    sql = 'SELECT * FROM `room_hot_analsis` where day= "' + day + '" and hour=' + hour + ' ORDER BY `avg(room_hot)` LIMIT 100'
+    sql = 'SELECT * FROM `room_hot_analsis` where day= "' + day + '" and hour=' + hour + ' ORDER BY `sum(room_hot)` desc LIMIT 25'
     for i in toSQL(sql):
         gameName.append(str(i[2]))
         gameHot.append(str(i[3]))
     result["gameName"] = gameName
     result['gameHot'] = gameHot
-    print(result)
     return result
 
 
@@ -93,14 +92,17 @@ def displayMysqlDatabytype():
 
 @app.route('/displayMysqlDatabyroom', methods=['POST'])
 @cross_origin()
-def displayMysqlData2():
+def displayMysqlDatabyroom():
     result.clear()
     gameHot = []
     gametime = []
     print(str(request.data))
     room_id = str(request.data).split("'")[1].split('=')[1]
     sql = 'SELECT * FROM `basedata` WHERE room_id=' + room_id + ' ORDER BY day,hour'
-    for i in toSQL(sql):
+    # gametime=['2019-12-10 {}'.format(str(i))for i in range(23)].extend(['2019-12-11 {}'.format(str(i))for i in range(23)])
+    # for i in gametime:
+    #     print(gametime)
+    for i in set(toSQL(sql)):
         gameHot.append(str(i[6]))
         gametime.append(str(i[0]) + " " + str(i[1]))
     result["gameHot"] = gameHot

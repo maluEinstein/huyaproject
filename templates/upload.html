@@ -7,8 +7,10 @@
 </head>
 <body>
 
-<p id="display"></p>
-
+<p>当前提供的：<br>
+<p>查询日期为2019-12-19到2019-12-25<br>
+<p>直播间支持虎牙所有直播间</p>
+<p>前端存在部分BUG，请每次查询结束之后刷新网页</p>
 <BR>
 <input type="file" name="userfile" id="userfile">
 <button onclick="upload();">上传</button>
@@ -17,23 +19,28 @@
 <br>
 <br>
 <button onclick="displayPYData();">查询生成数据</button>
-<br>
+<br><br>
+查询某日某个时间段热度排行前25直播分类<br>
 <label>日期：</label><input type="text" id="day"><br>
 <label>时间：</label><input type="text" id="hour"><br>
-<button onclick="displayMysqlDataBytime()">查询</button>
+<button onclick="displayMysqlDataByTime()">查询</button>
+<br><br>
+查询直播分类在有记录时间范围内的热度变化情况<br>
+<label>直播分类：</label><input type="text" id="type_id"><br>
+<button onclick="displayMysqlDataByType()">查询</button>
+<br><br>
+查询直播间在有记录的时间范围内的热度变化情况<br>
+<label>直播间：</label><input type="text" id="room_id"><br>
+<button onclick="displayMysqlDataByRoom()">查询</button>
 <br>
-
-<label>直播间查询：</label><input type="text" id="room_id"><br>
-<button onclick="displayMysqlDataByroom()">查询</button>
 <br>
-<br>
-<label>查询某日直播分类变化情况</label><br>
+查询某日直播分类变化情况<br>
 <label>日期：</label>
 <input type="text" id="day11"><br>
 <button onclick="displayMysqlDataByDay()">查询</button>
 <br><br>
 
-
+<p id="display"></p>
 <div id="chart" style="width:2000px;height:800px;"></div>
 <div id="chart1" style="width:1500px;height:800px;"></div>
 <script>
@@ -46,23 +53,14 @@
     gameHot1 = [];
     gameHot2 = [];
     gameHot3 = [];
-
-
-
-    function displayMysqlDatabytime() {
-        gameName = [];
-        gameRoomNumber = [];
-        gameHot = [];
-        gamedata = [];
-        gameAve = [];
-        gametime = [];
+    function displayMysqlDataByTime() {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 msg = JSON.parse(xmlhttp.responseText);
-                gameHot = msg.gameHot
-                gameName = msg.gameName
-                drawchart3()
+                gameHot = msg.gameHot;
+                gameName = msg.gameName;
+                drawchartDataByTime();
                 document.getElementById('display').innerText = "查询结束"
             }
         };
@@ -73,21 +71,92 @@
         document.getElementById('display').innerText = "开始查询内容，请等待"
     }
 
+    function drawchartDataByTime() {
+        var ct = echarts.init(document.getElementById("chart"));
+        var option = {
+            title: {
+                text: '游戏数据计算',
+            },
+            tooltip: {},
+            legend: {
+                data: ['gameHot']
+            },
+            xAxis: {
+                data: gameName
+            },
+            yAxis: [
+                {
+                    name: '热度',
+                    type: 'value'
+                }],
+            series: [
+                {
+                    name: 'gameHot',
+                    type: 'bar',
+                    smooth: true,
+                    data: gameHot
+                }
+            ]
+        };
+        ct.setOption(option);
+    }
 
-    function displayMysqlDatabyroom() {
-        gameName = [];
-        gameRoomNumber = [];
-        gameHot = [];
-        gamedata = [];
-        gameAve = [];
-        gametime = []
+    function displayMysqlDataByType() {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 msg = JSON.parse(xmlhttp.responseText);
-                gameHot = msg.gameHot
-                gametime = msg.gametime
-                drawchart2()
+                gameHot = msg.gameHot;
+                gametime = msg.gametime;
+                console.log(gametime)
+                drawchartDataByType();
+                document.getElementById('display').innerText = "查询结束"
+            }
+        };
+        var type_id = document.getElementById('type_id').value
+        xmlhttp.open('post', 'http://127.0.0.1:5000/displayMysqlDatabytype');
+        xmlhttp.send("str1=" + type_id);
+        document.getElementById('display').innerText = "开始查询内容，请等待"
+    }
+
+    function drawchartDataByType() {
+        var ct = echarts.init(document.getElementById("chart"));
+        var option = {
+            title: {
+                text: '游戏数据计算',
+            },
+            tooltip: {},
+            legend: {
+                data: ['gameHot']
+            },
+            xAxis: {
+                data: gametime
+            },
+            yAxis: [
+                {
+                    name: '热度',
+                    type: 'value'
+                }],
+            series: [
+                {
+                    name: 'gameHot',
+                    type: 'line',
+                    smooth: true,
+                    data: gameHot
+                }
+            ]
+        };
+        ct.setOption(option);
+    }
+
+    function displayMysqlDataByRoom() {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                msg = JSON.parse(xmlhttp.responseText);
+                gameHot = msg.gameHot;
+                gametime = msg.gametime;
+                drawchartDataByRoom();
                 document.getElementById('display').innerText = "查询结束"
             }
         };
@@ -97,44 +166,47 @@
         document.getElementById('display').innerText = "开始查询内容，请等待"
     }
 
-
-    function upload() {
-        var userfile = document.getElementById('userfile');
-        var formData = new FormData();
-        formData.append("file", userfile.files[0]);
-        var xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function () {
-            if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
-                document.getElementById('display').innerText = xmlhttp.responseText;
-            }
+    function drawchartDataByRoom() {
+        var ct = echarts.init(document.getElementById("chart"));
+        var option = {
+            title: {
+                text: '游戏数据计算',
+            },
+            tooltip: {},
+            legend: {
+                data: ['gameHot']
+            },
+            xAxis: {
+                data: gametime
+            },
+            yAxis: [
+                {
+                    name: '热度',
+                    type: 'value'
+                }],
+            series: [
+                {
+                    name: 'gameHot',
+                    type: 'line',
+                    smooth: true,
+                    data: gameHot
+                }
+            ]
         };
-        xmlhttp.open("POST", "http://127.0.0.1:5000/upload");
-        xmlhttp.overrideMimeType('text/html;charset=bg2312');
-        xmlhttp.upload.onprogress = progressF;
-        xmlhttp.send(formData);
+        ct.setOption(option);
     }
 
-    function progressF(evt) {
-        var progressBar = document.getElementById("progressBar");
-        if (evt.lengthComputable) {
-            progressBar.max = evt.total;
-            progressBar.value = evt.loaded;
-        }
-    }
- function displayMysqlDataByDay() {
+    function displayMysqlDataByDay() {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 msg = JSON.parse(xmlhttp.responseText);
-                gameHot1 = msg.gameHot1
-                gameHot2 = msg.gameHot2
-                gameHot3 = msg.gameHot3
-                gameName = msg.gameName
-                console.log(gameHot1)
-                console.log(gameHot2)
-                console.log(gameHot3)
+                gameHot1 = msg.gameHot1;
+                gameHot2 = msg.gameHot2;
+                gameHot3 = msg.gameHot3;
+                gameName = msg.gameName;
                 document.getElementById('display').innerText = "查询结束"
-                drawchart4()
+                drawchartDataByDay()
             }
         };
         var day = document.getElementById("day11").value;
@@ -149,7 +221,7 @@
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {            // 坐标轴指示器，坐标轴触发有效
-                    type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                    type: 'line'        // 默认为直线，可选为：'line' | 'shadow'
                 }
             },
             legend: {
@@ -210,53 +282,18 @@
         ct.setOption(option);
     }
 
-    function drawchart3() {
-        var ct = echarts.init(document.getElementById("chart"));
-        var option = {
-            title: {
-                text: '游戏数据计算',
-            },
-            tooltip: {},
-            legend: {
-                data: ['gameHot']
-            },
-            xAxis: {
-                data: gameName
-            },
-            yAxis: [
-                {
-                    name: '热度',
-                    type: 'value'
-                }],
-            series: [
-                {
-                    name: 'gameHot',
-                    type: 'line',
-                    smooth: true,
-                    data: gameHot
-                }
-            ]
-        };
-        ct.setOption(option);
-    }
 
     function displayPYData() {
-        gameName = [];
-        gameRoomNumber = [];
-        gameHot = [];
-        gamedata = [];
-        gameAve = [];
-        gametime = [];
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                document.getElementById('display').innerText = "查询结束"
                 msg = JSON.parse(xmlhttp.responseText);
-
                 gameName = msg.gameName;
                 gameAve = msg.gameAve;
                 gameRoomNumber = msg.gameRoom;
                 gameHot = msg.gameHot;
-                console.log(gameName)
+                console.log(gameName);
                 for (i = 0; i < gameName.length; i++) {
                     map = {}
                     map['value'] = gameHot[i];
@@ -269,6 +306,33 @@
         };
         xmlhttp.open('post', 'http://127.0.0.1:5000/displayPYData');
         xmlhttp.send();
+        document.getElementById('display').innerText = "开始查询内容，请等待"
+    }
+
+    function upload() {
+        var userfile = document.getElementById('userfile');
+        var formData = new FormData();
+        formData.append("file", userfile.files[0]);
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+                document.getElementById('display').innerText = xmlhttp.responseText;
+
+            }
+        };
+        xmlhttp.open("POST", "http://127.0.0.1:5000/upload");
+        xmlhttp.overrideMimeType('text/html;charset=bg2312');
+        xmlhttp.upload.onprogress = progressF;
+        xmlhttp.send(formData);
+
+    }
+
+    function progressF(evt) {
+        var progressBar = document.getElementById("progressBar");
+        if (evt.lengthComputable) {
+            progressBar.max = evt.total;
+            progressBar.value = evt.loaded;
+        }
     }
 
     function drawchartBaseForPie() {

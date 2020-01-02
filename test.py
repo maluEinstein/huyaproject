@@ -31,9 +31,4 @@
 
 
 # 测试循环生成条件查询的语句
-gameName = ['星秀', '王者荣耀', '英雄联盟', '体育', '交友', '一起看', '户外', '绝地求生', '颜值']
-sql = [
-    'SELECT * FROM (SELECT game_name,SUM(`sum(room_hot)`) AS hot FROM (select * from `room_hot_analsis` where day=  and HOUR >= 6 AND HOUR <= 13) AS tmp group by game_name) AS t  WHERE game_name = " {} "'.format(
-        str(i)) for i in gameName]
-for i in sql:
-    print(i)
+
