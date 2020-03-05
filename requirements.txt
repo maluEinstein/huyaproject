@@ -1,3 +1,5 @@
+kafka
+
 altgraph==0.16.1
 certifi==2019.9.11
 chardet==3.0.4
