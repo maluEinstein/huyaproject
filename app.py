@@ -19,57 +19,59 @@ def display():
     return result
 
 
-# 查询mysql里的数据
-
-@app.route('/displayMysqlDatabyDay', methods=['POST'])
+# 查询时间段内直播指标变化
+@app.route('/TypeChangeByDay', methods=['POST'])
 @cross_origin()
-def displayMysqlDatabyDay():
+def TypeChangeByDay():
     result.clear()
-    gameName = ['星秀', '王者荣耀', '英雄联盟', '体育', '交友', '一起看', '户外', '绝地求生', '颜值']
-    gameHot1 = []
-    gameHot2 = []
-    gameHot3 = []
-    game_name = ''
-    day = str(request.data).split("'")[1].split('&')[0].split('=')[1]
-    sql1 = [(
-            'SELECT * FROM (SELECT game_name,SUM(`sum(room_hot)`) AS hot FROM (select * from `room_hot_analsis` where day= "' + \
-            day + '" and HOUR >= 6 AND HOUR <= 13) AS tmp group by game_name) AS t  WHERE game_name = "{}"').format(
-        str(i)) for i in gameName]
-    sql2 = [
-        'SELECT * FROM (SELECT game_name,SUM(`sum(room_hot)`) AS hot FROM (select * from `room_hot_analsis` where day= "' + \
-        day + '" and hour >= 14 and hour <= 21) AS tmp group by game_name) AS t WHERE game_name = "{}"'.format(str(i))
-        for i in gameName]
-    sql3 = [
-        'SELECT * FROM (SELECT game_name,SUM(`sum(room_hot)`) AS hot FROM (select * from `room_hot_analsis` where day= "' + \
-        day + '" and hour >= 22 or hour <= 5) AS tmp group by game_name) AS t WHERE game_name = "{}"'.format(str(i))
-        for i in gameName]
-    for i in sql1:
-        gameHot1.append(str(toSQL(i)[0][1]))
-    for i in sql2:
-        gameHot2.append(str(toSQL(i)[0][1]))
-    for i in sql3:
-        gameHot3.append(str(toSQL(i)[0][1]))
-    result["gameName"] = gameName
-    result['gameHot1'] = gameHot1
-    result['gameHot2'] = gameHot2
-    result['gameHot3'] = gameHot3
+    days = []
+    dayMax = []
+    dayAvg = []
+    daySum = []
+    dayCount = []
+    start = str(request.data).split("'")[1].split('&')[0].split('=')[1]
+    end = str(request.data).split("'")[1].split('&')[1].split('=')[1]
+    sql = 'SELECT * FROM ' \
+          '(SELECT day,MAX(`max(room_hot)`),ROUND(AVG(`avg(room_hot)`)),SUM(`sum(room_hot)`), SUM(`count(room_hot)`) FROM room_hot_analsis GROUP BY day) as tmp' \
+          ' WHERE day BETWEEN "' + start + '" and"' + end + '" ORDER BY day'
+    for i in toSQL(sql):
+        days.append(str(i[0]))
+        dayMax.append(str(i[1]))
+        dayAvg.append(str(i[2]))
+        daySum.append(str(i[3]))
+        dayCount.append(str(i[4]))
+    result['days'] = days
+    result['dayMax'] = dayMax
+    result['dayAvg'] = dayAvg
+    result['daySum'] = daySum
+    result['dayCount'] = dayCount
     return result
 
 
-@app.route('/displayMysqlDatabytime', methods=['POST'])
+# 查询单日直播分类指标
+@app.route('/displayDataByDay', methods=['POST'])
 @cross_origin()
-def displayMysqlDatabytime():
+def displayDataByDay():
     result.clear()
     gameName = []
-    gameHot = []
+    dataMax = []
+    dataAvg = []
+    dataSum = []
+    dataCount = []
     day = str(request.data).split("'")[1].split('&')[0].split('=')[1]
-    hour = str(request.data).split("'")[1].split('&')[1].split('=')[1]
-    sql = 'SELECT * FROM `room_hot_analsis` where day= "' + day + '" and hour=' + hour + ' ORDER BY `sum(room_hot)` desc LIMIT 25'
+    sql='SELECT game_name,MAX(`max(room_hot)`),ROUND(AVG(`avg(room_hot)`)),SUM(`sum(room_hot)`), SUM(`count(room_hot)`) FROM' \
+        ' (SELECT * FROM room_hot_analsis WHERE day="'+day+'" and `count(room_hot)` >20) as tmp GROUP BY game_name'
     for i in toSQL(sql):
-        gameName.append(str(i[2]))
-        gameHot.append(str(i[3]))
+        gameName.append(str(i[0]))
+        dataMax.append(str(i[1]))
+        dataAvg.append(str(i[2]))
+        dataSum.append(str(i[3]))
+        dataCount.append(str(i[4]))
     result["gameName"] = gameName
-    result['gameHot'] = gameHot
+    result['dataMax'] = dataMax
+    result['dataAvg'] = dataAvg
+    result['dataSum'] = dataSum
+    result['dataCount'] = dataCount
     return result
 
 
@@ -166,8 +168,8 @@ def calData():
 
 
 def toSQL(sql):
-    # 本地运行是访问的数据库
-    conn = pymysql.connect(host='192.168.56.112', port=3306, user='hadoop', password='Hadoop@123', db='huya',
+    # 本地运行时访问的数据库
+    conn = pymysql.connect(host='127.0.0.1', port=3306, user='hadoop', password='Hadoop@123', db='huya',
                            charset='utf8')
     # 阿里云上运行访问的数据库
     # conn = pymysql.connect(host='localhost', port=3306, user='hadoop', password='Hadoop@123', db='huya',
