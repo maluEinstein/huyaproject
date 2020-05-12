@@ -25,26 +25,23 @@ def display():
 def TypeChangeByDay():
     result.clear()
     days = []
-    dayMax = []
-    dayAvg = []
     daySum = []
-    dayCount = []
     start = str(request.data).split("'")[1].split('&')[0].split('=')[1]
     end = str(request.data).split("'")[1].split('&')[1].split('=')[1]
-    sql = 'SELECT * FROM ' \
-          '(SELECT day,MAX(`max(room_hot)`),ROUND(AVG(`avg(room_hot)`)),SUM(`sum(room_hot)`), SUM(`count(room_hot)`) FROM room_hot_analsis GROUP BY day) as tmp' \
-          ' WHERE day BETWEEN "' + start + '" and"' + end + '" ORDER BY day'
+    game_name = ['英雄联盟', '星秀', '王者荣耀', '交友', '一起看', '绝地求生', '和平精英', 'CF手游', 'lol云顶之弈', '魔兽世界', '我的世界', '穿越火线', '一起看']
+    sql = 'SELECT day,game_name,SUM(`sum(room_hot)`) from (SELECT * FROM room_hot_analsis WHERE (game_name= " ' + \
+          game_name[0] + '"'
+    for i in range(1, game_name.__len__()):
+        sql = sql + ' or '
+        sql = sql + 'game_name = "' + game_name[i] + '"'
+    sql = sql + ') and day BETWEEN  "' + start + '" and "' + end + '" ) as tmp GROUP BY day,game_name '
+    print(sql)
     for i in toSQL(sql):
         days.append(str(i[0]))
-        dayMax.append(str(i[1]))
-        dayAvg.append(str(i[2]))
-        daySum.append(str(i[3]))
-        dayCount.append(str(i[4]))
+        daySum.append(str(i[2]))
     result['days'] = days
-    result['dayMax'] = dayMax
-    result['dayAvg'] = dayAvg
+    result['']
     result['daySum'] = daySum
-    result['dayCount'] = dayCount
     return result
 
 
@@ -59,8 +56,9 @@ def displayDataByDay():
     dataSum = []
     dataCount = []
     day = str(request.data).split("'")[1].split('&')[0].split('=')[1]
-    sql='SELECT game_name,MAX(`max(room_hot)`),ROUND(AVG(`avg(room_hot)`)),SUM(`sum(room_hot)`), SUM(`count(room_hot)`) FROM' \
-        ' (SELECT * FROM room_hot_analsis WHERE day="'+day+'" and `count(room_hot)` >20) as tmp GROUP BY game_name'
+    sql = 'SELECT game_name,MAX(`max(room_hot)`),ROUND(AVG(`avg(room_hot)`)),SUM(`sum(room_hot)`), SUM(`count(room_hot)`) FROM' \
+          ' (SELECT * FROM room_hot_analsis WHERE day="' + day + '" and `count(room_hot)` >100) as tmp GROUP BY game_name ORDER BY SUM(`count(room_hot)`) desc'
+
     for i in toSQL(sql):
         gameName.append(str(i[0]))
         dataMax.append(str(i[1]))
@@ -75,20 +73,33 @@ def displayDataByDay():
     return result
 
 
-@app.route('/displayMysqlDatabytype', methods=['POST'])
+@app.route('/displayDataByType', methods=['POST'])
 @cross_origin()
-def displayMysqlDatabytype():
+def displayDatabytype():
     result.clear()
-    gameHot = []
-    gametime = []
-    game_name = str(request.data.decode("utf-8")).split('=')[1]
-    sql = 'SELECT * FROM `room_hot_analsis` where game_name="' + game_name + '" ORDER BY day,hour '
+    days = []
+    dataMax = []
+    dataAvg = []
+    dataSum = []
+    dataCount = []
+    print(request.data)
+    print(request.data.decode("utf-8"))
+    game_name = str(request.data.decode("utf-8")).split('&')[0].split('=')[1]
+    start = str(request.data).split("'")[1].split('&')[1].split('=')[1]
+    end = str(request.data).split("'")[1].split('&')[2].split('=')[1]
+    sql = 'SELECT day,MAX(`max(room_hot)`),ROUND(AVG(`avg(room_hot)`)),SUM(`sum(room_hot)`), SUM(`count(room_hot)`) FROM' \
+          '(SELECT * FROM `room_hot_analsis` where game_name="' + game_name + '" and day BETWEEN  "' + start + '"and "' + end + '")as tmp GROUP BY day ORDER BY day '
     for i in toSQL(sql):
-        print(i[3])
-        gameHot.append(str(i[3]))
-        gametime.append(str(i[0]) + " " + str(i[1]))
-    result["gameHot"] = gameHot
-    result['gametime'] = gametime
+        days.append(str(i[0]))
+        dataMax.append(str(i[1]))
+        dataAvg.append(str(i[2]))
+        dataSum.append(str(i[3]))
+        dataCount.append(str(i[4]))
+    result["days"] = days
+    result['dataMax'] = dataMax
+    result['dataAvg'] = dataAvg
+    result['dataSum'] = dataSum
+    result['dataCount'] = dataCount
     return result
 
 

@@ -25,16 +25,19 @@
 <input type="text" id="day"><br>
 <button onclick="displayDataByDay()">查询</button>
 <br><br>
-查询直播分类在有记录时间范围内的热度变化情况<br>
+查询直播分类在输入时间范围内的热度变化情况<br>
 <label>直播分类：</label><input type="text" id="type_id"><br>
-<button onclick="displayMysqlDataByType()">查询</button>
+<label>开始时间：</label><input type="text" id="type_start"><br>
+<label>结束时间：</label><input type="text" id="type_end"><br>
+<button onclick="displayDataByType()">查询</button>
 <br><br>
 查询直播间在有记录的时间范围内的热度变化情况<br>
 <label>直播间：</label><input type="text" id="room_id"><br>
 <button onclick="displayMysqlDataByRoom()">查询</button>
 <br>
 <br>
-
+<br>
+<br>
 
 单日各直播分类的指标
 
@@ -42,13 +45,13 @@
     <h1><p id="display"></p></h1>
 </div>
 
-<div id="chart" style="width:2000px;height:800px;"></div>
+<div id="chart" style="width:1800px;height:800px;"></div>
+<br>
+<br>
 <div id="chart1" style="width:1500px;height:800px;"></div>
 <script>
     gameName = [];
     gameRoomNumber = [];
-    gameHot = [];
-    gamedata = [];
     gameAve = [];
     gametime = [];
     gameHot1 = [];
@@ -59,6 +62,7 @@
     Avg = [];
     Sum = [];
     Count = [];
+    gameData = [];
 
     //查询范围内直播分类指标变化
     function TypeChangeByDay() {
@@ -86,11 +90,13 @@
         var ct = echarts.init(document.getElementById("chart"));
         var option = {
             title: {
-                text: '查询范围内直播分类指标变化',
-
+                text: '虎牙板块人气分析',
+                subtext: '数据来自虎牙',
+                x: 'center'
             },
             tooltip: {},
             legend: {
+                type: 'scroll',
                 data: ['max', 'avg', 'sum', 'count']
             },
             xAxis: {
@@ -142,8 +148,15 @@
                 Avg = msg.dataAvg;
                 Sum = msg.dataSum;
                 Count = msg.dataCount;
-                document.getElementById('display').innerText = "查询结束"
-                drawchartDataByDay()
+                for (i = 0; i < gameName.length; i++) {
+                    map = {};
+                    map['value'] = Sum[i];
+                    map['name'] = gameName[i];
+                    gameData.push(map)
+                }
+                document.getElementById('display').innerText = "查询结束";
+                drawchartDataByDay();
+                drawchartDataByDayPie()
             }
         };
         var day = document.getElementById("day").value;
@@ -171,12 +184,12 @@
                 containLabel: true
             },
             xAxis: {
-                data:gameName
+                data: gameName
             },
-            yAxis:  {
-                    name: '热度',
-                    type: 'value'
-                },
+            yAxis: {
+                name: '热度',
+                type: 'value'
+            },
             series: [
                 {
                     name: 'max',
@@ -207,37 +220,81 @@
         ct.setOption(option);
     }
 
+    function drawchartDataByDayPie() {
+        var ct = echarts.init(document.getElementById("chart1"));
+        var option = {
+            title: {
+                text: '虎牙板块人气分析',
+                subtext: '数据来自虎牙',
+                x: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            legend: {
+                type: 'scroll',
+                orient: 'vertical',
+                left: 10,
+                data: gameName
+            },
+            series: [
+                {
+                    name: '热度',
+                    type: 'pie',
+                    radius: '55%',
+                    data: gameData,
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+        ct.setOption(option);
+    }
 
-    function displayMysqlDataByType() {
+
+    //查询直播分类热度变化（天为单位）
+    function displayDataByType() {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 msg = JSON.parse(xmlhttp.responseText);
-                gameHot = msg.gameHot;
-                gametime = msg.gametime;
-                console.log(gametime)
-                drawchartDataByType();
+                days = msg.days;
+                Max = msg.dataMax;
+                Avg = msg.dataAvg;
+                Sum = msg.dataSum;
+                Count = msg.dataCount;
+                drawDataByType();
                 document.getElementById('display').innerText = "查询结束"
             }
         };
-        var type_id = document.getElementById('type_id').value
-        xmlhttp.open('post', 'http://127.0.0.1:5000/displayMysqlDatabytype');
-        xmlhttp.send("str1=" + type_id);
+        var type_id = document.getElementById('type_id').value;
+        var type_start = document.getElementById('type_start').value;
+        var type_end = document.getElementById('type_end').value;
+        xmlhttp.open('post', 'http://127.0.0.1:5000/displayDataByType');
+        xmlhttp.send("str1=" + type_id + "&str2=" + type_start + "&str3=" + type_end);
         document.getElementById('display').innerText = "开始查询内容，请等待"
     }
 
-    function drawchartDataByType() {
+    function drawDataByType() {
         var ct = echarts.init(document.getElementById("chart"));
         var option = {
             title: {
-                text: '游戏数据计算',
+                text: '虎牙板块人气分析',
+                subtext: '数据来自虎牙',
+                x: 'center'
             },
             tooltip: {},
             legend: {
-                data: ['gameHot']
+                data: ['max', 'avg', 'sum', 'count']
             },
             xAxis: {
-                data: gametime
+                data: days
             },
             yAxis: [
                 {
@@ -246,11 +303,29 @@
                 }],
             series: [
                 {
-                    name: 'gameHot',
+                    name: 'max',
                     type: 'line',
                     smooth: true,
-                    data: gameHot
+                    data: Max
+                },
+                {
+                    name: 'avg',
+                    type: 'line',
+                    smooth: true,
+                    data: Avg
+                },
+                {
+                    name: 'sum',
+                    type: 'line',
+                    smooth: true,
+                    data: Sum
+                }, {
+                    name: 'count',
+                    type: 'line',
+                    smooth: true,
+                    data: Count
                 }
+
             ]
         };
         ct.setOption(option);
@@ -303,84 +378,7 @@
         ct.setOption(option);
     }
 
-    function drawchartBaseForPie() {
-        var ct = echarts.init(document.getElementById("chart1"));
-        var option = {
-            title: {
-                text: '虎牙板块人气分析',
-                subtext: '数据来自虎牙',
-                x: 'center'
-            },
-            tooltip: {
-                trigger: 'item',
-                formatter: "{a} <br/>{b} : {c} ({d}%)"
-            },
-            legend: {
-                orient: 'vertical',
-                left: 'left',
-                data: gameName
-            },
-            series: [
-                {
-                    name: '热度',
-                    type: 'pie',
-                    radius: '55%',
-                    center: ['50%', '60%'],
-                    data: gamedata,
-                    itemStyle: {
-                        emphasis: {
-                            shadowBlur: 10,
-                            shadowOffsetX: 0,
-                            shadowColor: 'rgba(0, 0, 0, 0.5)'
-                        }
-                    }
-                }
-            ]
-        };
-        ct.setOption(option);
-    }
 
-    function drawchartBaseForLine() {
-        var ct = echarts.init(document.getElementById("chart"));
-        var option = {
-            title: {
-                text: '游戏数据计算',
-            },
-            tooltip: {},
-            legend: {
-                data: ['gameAve', 'gameHot']
-            },
-            xAxis: {
-                data: gameName
-            },
-            yAxis: [
-                {
-                    name: '热度',
-                    type: 'value'
-                },
-                {
-                    name: '房间平均热度',
-                    nameLocation: 'start',
-                    type: 'value'
-                }],
-            series: [
-                {
-                    name: 'gameAve',
-                    type: 'line',
-                    yAxisIndex: 1,
-                    smooth: true,
-                    data: gameAve
-                },
-                {
-                    name: 'gameHot',
-                    type: 'line',
-                    smooth: true,
-                    data: gameHot
-                }
-            ]
-        };
-        ct.setOption(option);
-    }
 </script>
 </body>
 </html>

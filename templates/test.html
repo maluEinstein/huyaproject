@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="../static/echarts.min.js"></script>
+</head>
+<body>
+<button onclick="drwachartTest()">查询</button>
+<div id="chart" style="width:1500px;height:800px;"></div>
+<script>
+    function drawchartDataByDay() {
+        var myChart = echarts.init(document.getElementById("chart"));
+        setTimeout(function () {
+            option = {
+                legend: {},
+                tooltip: {
+                    trigger: 'axis',
+                    showContent: false
+                },
+                dataset: {
+                    source: [
+                        ['days', '2012', '2013', '2014', '2015', '2016', '2017'],
+                        ['Matcha Latte', 41.1, 30.4, 65.1, 53.3, 83.8, 98.7],
+                        ['Milk Tea', 86.5, 92.1, 85.7, 83.1, 73.4, 55.1],
+                        ['Cheese Cocoa', 24.1, 67.2, 79.5, 86.4, 65.2, 82.5],
+                        ['Walnut Brownie', 55.2, 67.1, 69.2, 72.4, 53.9, 39.1]
+                    ]
+                },
+                xAxis: {type: 'category'},
+                yAxis: {gridIndex: 0},
+                grid: {top: '55%'},
+                series: [
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {
+                        type: 'pie',
+                        id: 'pie',
+                        radius: '30%',
+                        center: ['50%', '25%'],
+                        label: {
+                            formatter: '{b}: {@2012} ({d}%)'
+                        },
+                        encode: {
+                            itemName: 'days',
+                            value: '2012',
+                            tooltip: '2012'
+                        }
+                    }
+                ]
+            };
+            myChart.on('updateAxisPointer', function (event) {
+                var xAxisInfo = event.axesInfo[0];
+                if (xAxisInfo) {
+                    var dimension = xAxisInfo.value + 1;
+                    myChart.setOption({
+                        series: {
+                            id: 'pie',
+                            label: {
+                                formatter: '{b}: {@[' + dimension + ']} ({d}%)'
+                            },
+                            encode: {
+                                value: dimension,
+                                tooltip: dimension
+                            }
+                        }
+                    });
+                }
+            });
+
+            myChart.setOption(option);
+
+        });
+    }
+
+
+    function drwachartTest() {
+        var ct = echarts.init(document.getElementById("chart"));
+        option = {
+            title: {
+                text: '直播间热度档次统计图',
+                subtext: '利用K-Means算法打上标签统计',
+                left: 'center'
+            },
+            tooltip: {
+                trigger: 'item',
+                formatter: '{a} <br/>{b} : {c} ({d}%)'
+            },
+            legend: {
+                orient: 'vertical',
+                left: 'left',
+                data: ['无热度', '低热度', '中等热度', '较高热度', '热门热度', "顶级热度"]
+            },
+            series: [
+                {
+                    name: '热度',
+                    type: 'pie',
+                    radius: '55%',
+                    center: ['50%', '60%'],
+                    data: [
+                        {value: 3264266, name: '无热度'},
+                        {value: 154134, name: '低热度'},
+                        {value: 11014, name: '中等热度'},
+                        {value: 4063, name: '较高热度'},
+                        {value: 377, name: '热门热度'},
+                        {value: 33, name: '顶级热度'}
+                    ],
+                    emphasis: {
+                        itemStyle: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        };
+
+
+        ct.setOption(option);
+    }
+
+    function drwachartTest1() {
+        var ct = echarts.init(document.getElementById("chart"));
+        option = {
+            color: ['#3398DB'],
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                    type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    data: ['无热度', '低热度', '中等热度', '较高热度', '热门热度', "顶级热度"],
+                    axisTick: {
+                        alignWithLabel: true
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+            series: [
+                {
+                    name: '直接访问',
+                    type: 'bar',
+                    barWidth: '60%',
+                    data: [3264266, 154134, 11014, 4063, 377, 33]
+                }
+            ]
+        };
+
+        ct.setOption(option);
+    }
+</script>
+</body>
+</html>
