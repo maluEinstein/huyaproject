@@ -6,12 +6,12 @@
     <script src="../static/echarts.min.js"></script>
 </head>
 <body>
-<button onclick="drwachartTest()">查询</button>
+<button onclick="drawchartDataByDay()">查询</button>
 <div id="chart" style="width:1500px;height:800px;"></div>
 <script>
+drawchartDataByDay()
     function drawchartDataByDay() {
         var myChart = echarts.init(document.getElementById("chart"));
-        setTimeout(function () {
             option = {
                 legend: {},
                 tooltip: {
@@ -20,11 +20,19 @@
                 },
                 dataset: {
                     source: [
-                        ['days', '2012', '2013', '2014', '2015', '2016', '2017'],
-                        ['Matcha Latte', 41.1, 30.4, 65.1, 53.3, 83.8, 98.7],
-                        ['Milk Tea', 86.5, 92.1, 85.7, 83.1, 73.4, 55.1],
-                        ['Cheese Cocoa', 24.1, 67.2, 79.5, 86.4, 65.2, 82.5],
-                        ['Walnut Brownie', 55.2, 67.1, 69.2, 72.4, 53.9, 39.1]
+                        ['days', '2020-04-01', '2020-04-02', '2020-04-03', '2020-04-04', '2020-04-05', '2020-04-06', '2020-04-07'],
+                    ['CF手游', 721112540, 738993814, 811601075, 10956582, 879427516, 958904112, 1063703125],
+                    ['lol云顶之弈', 813734644, 736947314, 770877200, 6381373, 808728739, 783577573, 789502267],
+                    ['一起看', 636977702, 650878386, 640277156, 38284749, 601831154, 661936268, 646044233],
+                    ['交友', 2828912397, 2771094947, 2709381741, 91540697, 2636335731, 2866204911, 2864408245],
+                    ['和平精英', 2006632707, 2054581650, 2050591323, 24176270, 2216418742, 2098123665, 2080779817],
+                    ['我的世界', 537418743, 537511727, 544549614, 17656696, 448789872, 518301965, 505039810],
+                    ['星秀', 2333995541, 2372169817, 2320977724, 21231350, 2172452579, 2420587351, 2528030915],
+                    ['王者荣耀', 3855989336, 3758812265, 3689861345, 34071949, 3996484022, 3784214958, 3797047335],
+                    ['穿越火线', 603970232, 600026190, 614326181, 6898295, 621985362, 623780544, 601732795],
+                    ['绝地求生', 997698021, 1131128535, 1079471889, 40917483, 1061018930, 1096361389, 1066701837],
+                    ['英雄联盟', 3068638324, 2722840815, 3008761775, 25169548, 3329445967, 3147024192, 3054767226],
+                    ['魔兽世界', 485139671, 458009021, 437009846, 8061149, 442108431, 418879795, 495645900]
                     ]
                 },
                 xAxis: {type: 'category'},
@@ -35,18 +43,26 @@
                     {type: 'line', smooth: true, seriesLayoutBy: 'row'},
                     {type: 'line', smooth: true, seriesLayoutBy: 'row'},
                     {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
                     {
                         type: 'pie',
                         id: 'pie',
                         radius: '30%',
                         center: ['50%', '25%'],
                         label: {
-                            formatter: '{b}: {@2012} ({d}%)'
+                            formatter: '{b}: {@2020-04-01} ({d}%)'
                         },
                         encode: {
                             itemName: 'days',
-                            value: '2012',
-                            tooltip: '2012'
+                            value: '2020-04-01',
+                            tooltip: '2020-04-01'
                         }
                     }
                 ]
@@ -54,7 +70,7 @@
             myChart.on('updateAxisPointer', function (event) {
                 var xAxisInfo = event.axesInfo[0];
                 if (xAxisInfo) {
-                    var dimension = xAxisInfo.value + 1;
+                    var dimension = xAxisInfo.value+1;
                     myChart.setOption({
                         series: {
                             id: 'pie',
@@ -69,10 +85,7 @@
                     });
                 }
             });
-
             myChart.setOption(option);
-
-        });
     }
 
 
@@ -122,48 +135,7 @@
         ct.setOption(option);
     }
 
-    function drwachartTest1() {
-        var ct = echarts.init(document.getElementById("chart"));
-        option = {
-            color: ['#3398DB'],
-            tooltip: {
-                trigger: 'axis',
-                axisPointer: {            // 坐标轴指示器，坐标轴触发有效
-                    type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
-                }
-            },
-            grid: {
-                left: '3%',
-                right: '4%',
-                bottom: '3%',
-                containLabel: true
-            },
-            xAxis: [
-                {
-                    type: 'category',
-                    data: ['无热度', '低热度', '中等热度', '较高热度', '热门热度', "顶级热度"],
-                    axisTick: {
-                        alignWithLabel: true
-                    }
-                }
-            ],
-            yAxis: [
-                {
-                    type: 'value'
-                }
-            ],
-            series: [
-                {
-                    name: '直接访问',
-                    type: 'bar',
-                    barWidth: '60%',
-                    data: [3264266, 154134, 11014, 4063, 377, 33]
-                }
-            ]
-        };
 
-        ct.setOption(option);
-    }
 </script>
 </body>
 </html>

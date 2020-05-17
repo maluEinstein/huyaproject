@@ -1,4 +1,6 @@
 import os
+import time
+
 from aip import AipNlp
 import pymysql
 
@@ -33,26 +35,31 @@ def dealFile2(game_name):
     API_KEY = 'xhX16HGosqbT6MGfcKKAAiAj'
     SECRET_KEY = 'ZvPq3IKfSzT8crw1dL2Eya9UV4qVFqlK'
     client = AipNlp(APP_ID, API_KEY, SECRET_KEY)
-    interval = 500
+    interval = 200
     count = int(toSQL('SELECT COUNT(room_name) from tfidfdata ')[0][0])
-    count = int(count / 500) - 1
+    # 稍微提高下程序运行速度
+    if count >= 200:
+        count = 200
     for i in range(count):
         start = 1 + interval * i
-        end = 500 + interval * i
-        sql = 'SELECT room_name FROM `tfidfdata` WHERE game_name="' + game_name + '"LIMIT ' + str(start) + ',' + str(end)
+        sql = 'SELECT room_name FROM `tfidfdata` WHERE game_name="' + game_name + '"LIMIT ' + str(start) + ',' + str(
+            interval)
+        print(sql)
         longSentence = ''
         for sentence in toSQL(sql):
-            longSentence = str(sentence).split("'")[1] + longSentence
-            # longSentence = str(sentence).split("'")[1].encode('utf-8').decode('GBK', 'ignore') + longSentence
+            longSentence = longSentence + str(sentence).split("'")[1]
         wordMsg = client.lexer(longSentence)['items']
         # 去除符号
         wordMsg = filter(lambda x: x['pos'] != 'w', wordMsg)
         finalres = ''
         for word in wordMsg:
             finalres = finalres + ' ' + word['item']
-        with open('E:/share/word' + game_name + '.txt', 'a') as fw:
+        finalres = finalres + '\n'
+        with open('E:/share/TFIDFData/' + game_name + '.txt', 'a') as fw:
             fw.writelines(finalres)
+        time.sleep(1)
 
 
-game_name = '英雄联盟'
-dealFile2(game_name)
+game_name = ['星秀', '王者荣耀', '交友', '一起看', '绝地求生', '和平精英', 'CF手游', 'lol云顶之弈', '魔兽世界', '我的世界', '穿越火线', '一起看']
+for i in game_name:
+    dealFile2(i)

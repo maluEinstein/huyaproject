@@ -1,0 +1,24 @@
+.title {
+    text-align: center;
+}
+
+.query_wrapper .query_item {
+    display: none;
+}
+
+.query_wrapper .query_item label {
+    margin-left: 10px;
+}
+
+.query_wrapper .query_item input {
+    margin-bottom: 20px;
+}
+
+.query_wrapper .query_item button {
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+.query_wrapper .query_name {
+    margin-bottom: 20px;
+}

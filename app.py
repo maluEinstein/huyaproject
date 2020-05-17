@@ -24,24 +24,38 @@ def display():
 @cross_origin()
 def TypeChangeByDay():
     result.clear()
-    days = []
-    daySum = []
+    days = ['days']
     start = str(request.data).split("'")[1].split('&')[0].split('=')[1]
     end = str(request.data).split("'")[1].split('&')[1].split('=')[1]
+    resType=str(request.data).split("'")[1].split('&')[2].split('=')[1]
+    index = 0
+    res = []
     game_name = ['英雄联盟', '星秀', '王者荣耀', '交友', '一起看', '绝地求生', '和平精英', 'CF手游', 'lol云顶之弈', '魔兽世界', '我的世界', '穿越火线', '一起看']
-    sql = 'SELECT day,game_name,SUM(`sum(room_hot)`) from (SELECT * FROM room_hot_analsis WHERE (game_name= " ' + \
+    sql = 'SELECT day,game_name,SUM(`sum(room_hot)`) from (SELECT * FROM room_hot_analsis WHERE (game_name= "' + \
           game_name[0] + '"'
     for i in range(1, game_name.__len__()):
         sql = sql + ' or '
         sql = sql + 'game_name = "' + game_name[i] + '"'
     sql = sql + ') and day BETWEEN  "' + start + '" and "' + end + '" ) as tmp GROUP BY day,game_name '
     print(sql)
-    for i in toSQL(sql):
-        days.append(str(i[0]))
-        daySum.append(str(i[2]))
-    result['days'] = days
-    result['']
-    result['daySum'] = daySum
+    # 保存数据库搜索出的结果
+    SQLres = toSQL(sql)
+    # 设置游戏分类的列表再填入数据
+    for i in SQLres:
+        res.append([str(i[1])])
+        index = index + 1
+        if index == game_name.__len__() - 1:
+            index = 0
+            break
+    for i in SQLres:
+        res[index].append(str(i[2]))
+        index = index + 1
+        if index == game_name.__len__() - 1:
+            days.append(str(i[0]))
+            index = 0
+    res.insert(0, days)
+    print(res)
+    result['dataSet'] = res
     return result
 
 
