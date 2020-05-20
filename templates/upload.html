@@ -32,10 +32,10 @@
     <br/>
     <div class="query_item">
         <label>指标类型有：AVG,SUM,COUNT,MAX<br><br>
-        <label>开始日期：</label><input type="text" id="start"><br>
-        <label>结束日期：</label><input type="text" id="end"><br>
-        <label>查询指标类型：</label><input type="text" id="resType"><br>
-        <button onclick="TypeChangeByDay()">查询</button>
+            <label>开始日期：</label><input type="text" id="start"><br>
+            <label>结束日期：</label><input type="text" id="end"><br>
+            <label>查询指标类型：</label><input type="text" id="resType"><br>
+            <button onclick="TypeChangeByDay()">查询</button>
     </div>
     <div class="query_item">
         <label>日期：</label>
@@ -84,6 +84,7 @@
     gameData = [];
     DataSet = [];
     document.getElementsByClassName("query_item")[0].style.display = "block";
+
     //查询范围内直播分类指标变化
     function TypeChangeByDay() {
         var xmlhttp = new XMLHttpRequest();
@@ -98,74 +99,74 @@
         };
         var start = document.getElementById("start").value;
         var end = document.getElementById("end").value;
-        var resType=document.getElementById("resType".value());
+        var resType = document.getElementById("resType").value;
         xmlhttp.open('post', 'http://127.0.0.1:5000/TypeChangeByDay');
-        xmlhttp.send("start=" + start + "&end=" + end+'&resType='+resType);
+        xmlhttp.send("start=" + start + "&end=" + end + '&resType=' + resType);
         document.getElementById('display').innerText = "开始查询内容，请等待"
     }
 
     function drawTypeChangeByDay() {
         var ct = echarts.init(document.getElementById("chart"));
-            option = {
-                legend: {},
-                tooltip: {
-                    trigger: 'axis',
-                    showContent: false
-                },
-                dataset: {
-                    source: DataSet
-                },
-                xAxis: {type: 'category'},
-                yAxis: {gridIndex: 0},
-                grid: {top: '55%'},
-                series: [
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {
-                        type: 'pie',
+        option = {
+            legend: {},
+            tooltip: {
+                trigger: 'axis',
+                showContent: false
+            },
+            dataset: {
+                source: DataSet
+            },
+            xAxis: {type: 'category'},
+            yAxis: {gridIndex: 0},
+            grid: {top: '55%'},
+            series: [
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {type: 'line', smooth: true, seriesLayoutBy: 'row'},
+                {
+                    type: 'pie',
+                    id: 'pie',
+                    radius: '30%',
+                    center: ['50%', '25%'],
+                    label: {
+                        formatter: '{b}: {@' + DataSet[0][1] + '} ({d}%)'
+                    },
+                    encode: {
+                        itemName: 'days',
+                        value: DataSet[0][1],
+                        tooltip: DataSet[0][1]
+                    }
+                }
+            ]
+        };
+        ct.on('updateAxisPointer', function (event) {
+            var xAxisInfo = event.axesInfo[0];
+            if (xAxisInfo) {
+                var dimension = xAxisInfo.value + 1;
+                myChart.setOption({
+                    series: {
                         id: 'pie',
-                        radius: '30%',
-                        center: ['50%', '25%'],
                         label: {
-                            formatter: '{b}: {@'+DataSet[0][1]+'} ({d}%)'
+                            formatter: '{b}: {@[' + dimension + ']} ({d}%)'
                         },
                         encode: {
-                            itemName: 'days',
-                            value: DataSet[0][1],
-                            tooltip: DataSet[0][1]
+                            value: dimension,
+                            tooltip: dimension
                         }
                     }
-                ]
-            };
-            ct.on('updateAxisPointer', function (event) {
-                var xAxisInfo = event.axesInfo[0];
-                if (xAxisInfo) {
-                    var dimension = xAxisInfo.value+1;
-                    myChart.setOption({
-                        series: {
-                            id: 'pie',
-                            label: {
-                                formatter: '{b}: {@[' + dimension + ']} ({d}%)'
-                            },
-                            encode: {
-                                value: dimension,
-                                tooltip: dimension
-                            }
-                        }
-                    });
-                }
-            });
-            ct.setOption(option);
+                });
+            }
+        });
+        ct.setOption(option);
     }
 
     //查询单日的直播分类指标
@@ -260,9 +261,6 @@
         var ct = echarts.init(document.getElementById("chart1"));
         var option = {
             title: {
-                text: '虎牙板块人气分析',
-                subtext: '数据来自虎牙',
-                x: 'center'
             },
             tooltip: {
                 trigger: 'item',
@@ -321,13 +319,11 @@
         var ct = echarts.init(document.getElementById("chart"));
         var option = {
             title: {
-                text: '虎牙板块人气分析',
-                subtext: '数据来自虎牙',
-                x: 'center'
             },
             tooltip: {},
             legend: {
-                data: ['max', 'avg', 'sum', 'count']
+                data: ['max', 'avg', 'sum', 'count'],
+
             },
             xAxis: {
                 data: days
@@ -336,7 +332,10 @@
                 {
                     name: '热度',
                     type: 'value'
-                }],
+                }, {
+                name: '房间数量',
+                type: 'value'
+            }],
             series: [
                 {
                     name: 'max',
@@ -359,6 +358,7 @@
                     name: 'count',
                     type: 'line',
                     smooth: true,
+                     yAxisIndex: 1,
                     data: Count
                 }
 
@@ -388,7 +388,6 @@
         var ct = echarts.init(document.getElementById("chart"));
         var option = {
             title: {
-                text: '游戏数据计算',
             },
             tooltip: {},
             legend: {
