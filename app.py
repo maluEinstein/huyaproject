@@ -27,7 +27,6 @@ def TypeChangeByDay():
     days = ['days']
     start = str(request.data).split("'")[1].split('&')[0].split('=')[1]
     end = str(request.data).split("'")[1].split('&')[1].split('=')[1]
-    resType=str(request.data).split("'")[1].split('&')[2].split('=')[1]
     index = 0
     res = []
     game_name = ['英雄联盟', '星秀', '王者荣耀', '交友', '一起看', '绝地求生', '和平精英', 'CF手游', 'lol云顶之弈', '魔兽世界', '我的世界', '穿越火线', '一起看']
@@ -72,7 +71,6 @@ def displayDataByDay():
     day = str(request.data).split("'")[1].split('&')[0].split('=')[1]
     sql = 'SELECT game_name,MAX(`max(room_hot)`),ROUND(AVG(`avg(room_hot)`)),SUM(`sum(room_hot)`), SUM(`count(room_hot)`) FROM' \
           ' (SELECT * FROM room_hot_analsis WHERE day="' + day + '" and `count(room_hot)` >100) as tmp GROUP BY game_name ORDER BY SUM(`count(room_hot)`) desc'
-
     for i in toSQL(sql):
         gameName.append(str(i[0]))
         dataMax.append(str(i[1]))
@@ -114,6 +112,57 @@ def displayDatabytype():
     result['dataAvg'] = dataAvg
     result['dataSum'] = dataSum
     result['dataCount'] = dataCount
+    return result
+
+
+@app.route('/MLdata', methods=['POST'])
+@cross_origin()
+def MLdata():
+    result.clear()
+    sumData = 0
+    right = 0
+    # 计算正确率
+    for label in range(5):
+        for prediction in range(5):
+            sql = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE label=' + str(label) + ' AND prediction=' + str(prediction)
+            num = int(toSQL(sql)[0][0])
+            sumData = sumData + num
+            if label == prediction:
+                right = right + num
+    print('正确率：' + str(right / sumData))
+    print('样本总数：' + str(sumData))
+    print('预测正确的数量：' + str(right))
+    acc = []
+    recall = []
+    labelList = [0, 1, 2, 3, 4, 5]
+    for label in range(6):
+        sql = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE label=' + str(label) + ' AND prediction !=' + str(label)
+        sql1 = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE label=' + str(label) + ' AND prediction =' + str(label)
+        sql2 = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE prediction=' + str(label) + ' AND label !=' + str(label)
+        sql3 = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE prediction!=' + str(label) + ' AND label !=' + str(label)
+        num = int(toSQL(sql)[0][0])  # 将正类预测成负类
+        num1 = int(toSQL(sql1)[0][0])  # 将正类预测成正类
+        num2 = int(toSQL(sql2)[0][0])  # 负类预测成正类
+        num3 = int(toSQL(sql3)[0][0])  # 负类预测成负类
+        # 召回率
+        if (num + num1) != 0:
+            res = num1 / (num + num1)
+            acc.append(res)
+            print('标签' + str(label) + '召回率为'+str(res))
+        else:
+            recall.append(0)
+            print('标签' + str(label) + '在测试中没有该标签的数据')
+        # 精确率
+        if (num1 + num2) != 0:
+            res1 = num1 / (num1 + num2)
+            recall.append(res1)
+            print('标签' + str(label) + '精确率为' + str(res1))
+        else:
+            recall.append(0)
+            print('标签' + str(label) + '在测试中没有预测该标签的值')
+    result['acc'] = acc
+    result['recall'] = recall
+    result['labelList'] = labelList
     return result
 
 

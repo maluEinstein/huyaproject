@@ -31,11 +31,9 @@
     <input type="radio" name="query_item" value="3" onclick="radioSelect(this.value)" class="query_name">查询直播间在有记录的时间范围内的热度变化情况</input>
     <br/>
     <div class="query_item">
-        <label>指标类型有：AVG,SUM,COUNT,MAX<br><br>
-            <label>开始日期：</label><input type="text" id="start"><br>
-            <label>结束日期：</label><input type="text" id="end"><br>
-            <label>查询指标类型：</label><input type="text" id="resType"><br>
-            <button onclick="TypeChangeByDay()">查询</button>
+        <label>开始日期：</label><input type="text" id="start"><br>
+        <label>结束日期：</label><input type="text" id="end"><br>
+        <button onclick="TypeChangeByDay()">查询</button>
     </div>
     <div class="query_item">
         <label>日期：</label>
@@ -58,7 +56,8 @@
 <br>
 <br>
 <br>
-单日各直播分类的指标
+<button onclick="MLdata()">预测模型查询</button>
+
 
 <div style="text-align: center;">
     <h1><p id="display"></p></h1>
@@ -99,9 +98,8 @@
         };
         var start = document.getElementById("start").value;
         var end = document.getElementById("end").value;
-        var resType = document.getElementById("resType").value;
         xmlhttp.open('post', 'http://127.0.0.1:5000/TypeChangeByDay');
-        xmlhttp.send("start=" + start + "&end=" + end + '&resType=' + resType);
+        xmlhttp.send("start=" + start + "&end=" + end);
         document.getElementById('display').innerText = "开始查询内容，请等待"
     }
 
@@ -260,8 +258,7 @@
     function drawchartDataByDayPie() {
         var ct = echarts.init(document.getElementById("chart1"));
         var option = {
-            title: {
-            },
+            title: {},
             tooltip: {
                 trigger: 'item',
                 formatter: "{a} <br/>{b} : {c} ({d}%)"
@@ -318,8 +315,7 @@
     function drawDataByType() {
         var ct = echarts.init(document.getElementById("chart"));
         var option = {
-            title: {
-            },
+            title: {},
             tooltip: {},
             legend: {
                 data: ['max', 'avg', 'sum', 'count'],
@@ -333,9 +329,9 @@
                     name: '热度',
                     type: 'value'
                 }, {
-                name: '房间数量',
-                type: 'value'
-            }],
+                    name: '房间数量',
+                    type: 'value'
+                }],
             series: [
                 {
                     name: 'max',
@@ -358,7 +354,7 @@
                     name: 'count',
                     type: 'line',
                     smooth: true,
-                     yAxisIndex: 1,
+                    yAxisIndex: 1,
                     data: Count
                 }
 
@@ -387,8 +383,7 @@
     function drawchartDataByRoom() {
         var ct = echarts.init(document.getElementById("chart"));
         var option = {
-            title: {
-            },
+            title: {},
             tooltip: {},
             legend: {
                 data: ['gameHot']
@@ -419,6 +414,61 @@
             list[i].style.display = "none";
         }
         document.getElementsByClassName("query_item")[val].style.display = "block";
+    }
+
+    acc = [];
+    recall = [];
+    labelList = [];
+
+    function MLdata() {
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                msg = JSON.parse(xmlhttp.responseText);
+                labelList = msg.labelList;
+                acc = msg.acc;
+                recall = msg.recall;
+                var right=msg.right;
+                console.log(right);
+                drawMLPicture();
+                document.getElementById('display').innerText = "查询结束"
+            }
+        };
+        xmlhttp.open('post', 'http://127.0.0.1:5000/MLdata');
+        xmlhttp.send("str1=");
+        document.getElementById('display').innerText = "开始查询内容，请等待"
+    }
+
+    function drawMLPicture() {
+        var ct = echarts.init(document.getElementById("chart"));
+        var option = {
+            title: {},
+            tooltip: {},
+            legend: {
+                data: ['acc', 'recall']
+            },
+            xAxis: {
+                data: labelList
+            },
+            yAxis: [
+                {
+                    name: '所占比例',
+                    type: 'value'
+                }],
+            series: [
+                {
+                    name: '正确率',
+                    type: 'bar',
+                    data: acc
+                },
+                {
+                    name: '召回率率',
+                    type: 'bar',
+                    data: recall
+                }
+            ]
+        };
+        ct.setOption(option);
     }
 
 </script>
