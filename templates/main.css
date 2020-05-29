@@ -22,3 +22,34 @@
 .query_wrapper .query_name {
     margin-bottom: 20px;
 }
+
+.contain_wrapper {
+    display: flex;
+    flex-direction: row;
+}
+
+.query_wrapper {
+    flex: 1;
+}
+
+.inp_wrapper {
+    display: none;
+}
+
+.query_wrapper .inp_wrapper label {
+    margin-left: 10px;
+}
+
+.query_wrapper .inp_wrapper input {
+    margin-bottom: 20px;
+}
+
+.query_wrapper button {
+    margin-left: 10px;
+    cursor: pointer;
+}
+
+#query_select {
+    width: 100px;
+    margin-bottom: 20px;
+}

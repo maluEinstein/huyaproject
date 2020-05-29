@@ -99,4 +99,6 @@ def MLdata():
             print('样本标签 ' + str(label) + '  的精确率：' + str(res1))
         else:
             print('测试中没有预测该标签的值')
-dealFile1()
+
+
+# dealFile1()

@@ -121,14 +121,29 @@ def MLdata():
     result.clear()
     sumData = 0
     right = 0
+    rightNum = ''
+    # 获取参数
+    requestData = str(request.data)
+    print(requestData)
+    if len(requestData.split("&")) >= 2:
+        tableName = 'rfmlres'
+        tableName = tableName + requestData.split("'")[1].split('&')[0].split('=')[1] + \
+                    requestData.split("'")[1].split('&')[1].split('=')[1]
+    else:
+        tableName = 'lrmlres'
+        tableName = tableName + requestData.split("'")[1].split('&')[0].split('=')[1]
     # 计算正确率
     for label in range(5):
         for prediction in range(5):
-            sql = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE label=' + str(label) + ' AND prediction=' + str(prediction)
+            sql = 'SELECT COUNT(*) FROM `' + tableName + '` WHERE label=' + str(label) + ' AND prediction=' + str(
+                prediction)
             num = int(toSQL(sql)[0][0])
             sumData = sumData + num
             if label == prediction:
                 right = right + num
+    rightNum = rightNum + '正确率：' + str(right / sumData) + '\n'
+    rightNum = rightNum + '样本总数：' + str(sumData) + '\n'
+    rightNum = rightNum + '预测正确的数量：' + str(right) + '\n'
     print('正确率：' + str(right / sumData))
     print('样本总数：' + str(sumData))
     print('预测正确的数量：' + str(right))
@@ -136,10 +151,10 @@ def MLdata():
     recall = []
     labelList = [0, 1, 2, 3, 4, 5]
     for label in range(6):
-        sql = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE label=' + str(label) + ' AND prediction !=' + str(label)
-        sql1 = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE label=' + str(label) + ' AND prediction =' + str(label)
-        sql2 = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE prediction=' + str(label) + ' AND label !=' + str(label)
-        sql3 = 'SELECT COUNT(*) FROM `RfMLres5010` WHERE prediction!=' + str(label) + ' AND label !=' + str(label)
+        sql = 'SELECT COUNT(*) FROM `' + tableName + '` WHERE label=' + str(label) + ' AND prediction !=' + str(label)
+        sql1 = 'SELECT COUNT(*) FROM `' + tableName + '` WHERE label=' + str(label) + ' AND prediction =' + str(label)
+        sql2 = 'SELECT COUNT(*) FROM `' + tableName + '` WHERE prediction=' + str(label) + ' AND label !=' + str(label)
+        sql3 = 'SELECT COUNT(*) FROM `' + tableName + '` WHERE prediction!=' + str(label) + ' AND label !=' + str(label)
         num = int(toSQL(sql)[0][0])  # 将正类预测成负类
         num1 = int(toSQL(sql1)[0][0])  # 将正类预测成正类
         num2 = int(toSQL(sql2)[0][0])  # 负类预测成正类
@@ -148,7 +163,7 @@ def MLdata():
         if (num + num1) != 0:
             res = num1 / (num + num1)
             acc.append(res)
-            print('标签' + str(label) + '召回率为'+str(res))
+            print('标签' + str(label) + '召回率为' + str(res))
         else:
             recall.append(0)
             print('标签' + str(label) + '在测试中没有该标签的数据')
@@ -160,6 +175,7 @@ def MLdata():
         else:
             recall.append(0)
             print('标签' + str(label) + '在测试中没有预测该标签的值')
+    result['rightNum'] = rightNum
     result['acc'] = acc
     result['recall'] = recall
     result['labelList'] = labelList

@@ -4,14 +4,13 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="../static/echarts.min.js"></script>
-
+    <link rel="stylesheet" type="text/css" href="./main.css">
 </head>
-<link rel="stylesheet" type="text/css" href="main.css">
+
 
 <body>
 
-<iframe src="./nav.html" width="100%" height="200" frameborder="no" border="0" marginwidth="0" marginheight="0"
-        scrolling="no" id="head"></iframe>
+<h1 style="text-align: center">虎牙数据分析</h1>
 
 <p>当前提供的：<br>
 <p>查询日期为2019-12-19到2020-04-07<br>
@@ -19,44 +18,76 @@
 <p>前端存在部分BUG，请每次查询结束之后刷新网页</p>
 
 
-<div class="query_wrapper">
-    <br/>
-    <input type="radio" name="query_item" value="0" onclick="radioSelect(this.value)" checked class="query_name">查询范围内直播分类指标变化</input>
-    <br/>
-    <input type="radio" name="query_item" value="1" onclick="radioSelect(this.value)"
-           class="query_name">查询某日直播分类变化情况</input>
-    <br/>
-    <input type="radio" name="query_item" value="2" onclick="radioSelect(this.value)" class="query_name">查询直播分类在输入时间范围内的热度变化情况</input>
-    <br/>
-    <input type="radio" name="query_item" value="3" onclick="radioSelect(this.value)" class="query_name">查询直播间在有记录的时间范围内的热度变化情况</input>
-    <br/>
-    <div class="query_item">
-        <label>开始日期：</label><input type="text" id="start"><br>
-        <label>结束日期：</label><input type="text" id="end"><br>
-        <button onclick="TypeChangeByDay()">查询</button>
+<div class="contain_wrapper">
+    <div class="query_wrapper">
+        <br/>
+        <input type="radio" name="query_item" value="0" onclick="radioSelect(this.value)" checked class="query_name">查询范围内直播分类指标变化</input>
+        <br/>
+        <input type="radio" name="query_item" value="1" onclick="radioSelect(this.value)"
+               class="query_name">查询某日直播分类变化情况</input>
+        <br/>
+        <input type="radio" name="query_item" value="2" onclick="radioSelect(this.value)" class="query_name">查询直播分类在输入时间范围内的热度变化情况</input>
+        <br/>
+        <input type="radio" name="query_item" value="3" onclick="radioSelect(this.value)" class="query_name">查询直播间在有记录的时间范围内的热度变化情况</input>
+        <br/>
+        <div class="query_item">
+            <label>开始日期：</label><input type="text" id="start"><br>
+            <label>结束日期：</label><input type="text" id="end"><br>
+            <button onclick="TypeChangeByDay()">查询</button>
+        </div>
+        <div class="query_item">
+            <label>日期：</label>
+            <input type="text" id="day"><br>
+            <button onclick="displayDataByDay()">查询</button>
+        </div>
+        <div class="query_item">
+            <label>直播分类：</label><input type="text" id="type_id"><br>
+            <label>开始时间：</label><input type="text" id="type_start"><br>
+            <label>结束时间：</label><input type="text" id="type_end"><br>
+            <button onclick="displayDataByType()">查询</button>
+        </div>
+        <div class="query_item">
+            <label>直播间：</label><input type="text" id="room_id"><br>
+            <button onclick="displayMysqlDataByRoom()">查询</button>
+        </div>
+        <br/>
     </div>
-    <div class="query_item">
-        <label>日期：</label>
-        <input type="text" id="day"><br>
-        <button onclick="displayDataByDay()">查询</button>
+
+    <div class="query_wrapper">
+        <input type="radio" name="logistic" value="0" onclick="logisticSelect(this.value)" checked class="query_name">逻辑回归</input>
+        <input type="radio" name="logistic" value="1" onclick="logisticSelect(this.value)"
+               class="query_name">随机森林</input>
+
+        <div class="inp_wrapper">
+            <label for="">迭代次数：</label>
+            <select name="" id="query_select">
+                <option value="5">5</option>
+                <option value="20">20</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+                <option value="2000">2000</option>
+                <option value="8000">8000</option>
+            </select>
+        </div>
+        <div class="inp_wrapper">
+            <label for="">最大深度：</label><select name="" id="MaxDepth">
+                <option value="10">10</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+        <div class="inp_wrapper">
+            <label for="">叶子节点数目：</label><select name="" id="NumTrees">
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="30">30</option>
+                <option value="50">50</option>
+            </select>
+        </div>
+
+        <button onclick="MLdata()">预测模型查询</button>
     </div>
-    <div class="query_item">
-        <label>直播分类：</label><input type="text" id="type_id"><br>
-        <label>开始时间：</label><input type="text" id="type_start"><br>
-        <label>结束时间：</label><input type="text" id="type_end"><br>
-        <button onclick="displayDataByType()">查询</button>
-    </div>
-    <div class="query_item">
-        <label>直播间：</label><input type="text" id="room_id"><br>
-        <button onclick="displayMysqlDataByRoom()">查询</button>
-    </div>
-    <br/>
+
 </div>
-<br>
-<br>
-<br>
-<br>
-<button onclick="MLdata()">预测模型查询</button>
 
 
 <div style="text-align: center;">
@@ -68,6 +99,7 @@
 <br>
 <div id="chart1" style="width:1500px;height:800px;"></div>
 <script>
+
     gameName = [];
     gameRoomNumber = [];
     gameAve = [];
@@ -82,7 +114,11 @@
     Count = [];
     gameData = [];
     DataSet = [];
+    change = 0;
     document.getElementsByClassName("query_item")[0].style.display = "block";
+    document.getElementsByClassName("inp_wrapper")[0].style.display = "block";
+
+    const inp = document.getElementsByClassName("inp_wrapper");
 
     //查询范围内直播分类指标变化
     function TypeChangeByDay() {
@@ -422,20 +458,30 @@
 
     function MLdata() {
         var xmlhttp = new XMLHttpRequest();
+        right = "";
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
                 msg = JSON.parse(xmlhttp.responseText);
                 labelList = msg.labelList;
                 acc = msg.acc;
                 recall = msg.recall;
-                var right=msg.right;
+                right = msg.rightNum;
                 console.log(right);
                 drawMLPicture();
-                document.getElementById('display').innerText = "查询结束"
+                document.getElementById('display').innerText = right
+
             }
         };
-        xmlhttp.open('post', 'http://127.0.0.1:5000/MLdata');
-        xmlhttp.send("str1=");
+        if (change == 1) {
+            var MaxDepth = document.getElementById('MaxDepth').value;
+            var NumTrees = document.getElementById('NumTrees').value;
+            xmlhttp.open('post', 'http://127.0.0.1:5000/MLdata');
+            xmlhttp.send("str1=" + MaxDepth + "&str2=" + NumTrees);
+        } else {
+            var num = document.getElementById('query_select').value;
+            xmlhttp.open('post', 'http://127.0.0.1:5000/MLdata');
+            xmlhttp.send("str1=" + num);
+        }
         document.getElementById('display').innerText = "开始查询内容，请等待"
     }
 
@@ -469,6 +515,20 @@
             ]
         };
         ct.setOption(option);
+    }
+
+
+    function logisticSelect(val) {
+        change = val;
+        for (var i = 0; i < inp.length; i++) {
+            inp[i].style.display = "none";
+        }
+        if (val == 0) {
+            inp[0].style.display = "block";
+        } else {
+            inp[1].style.display = "block";
+            inp[2].style.display = "block";
+        }
     }
 
 </script>
