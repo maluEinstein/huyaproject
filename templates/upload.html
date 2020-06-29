@@ -28,8 +28,6 @@
         <br/>
         <input type="radio" name="query_item" value="2" onclick="radioSelect(this.value)" class="query_name">查询直播分类在输入时间范围内的热度变化情况</input>
         <br/>
-        <input type="radio" name="query_item" value="3" onclick="radioSelect(this.value)" class="query_name">查询直播间在有记录的时间范围内的热度变化情况</input>
-        <br/>
         <div class="query_item">
             <label>开始日期：</label><input type="text" id="start"><br>
             <label>结束日期：</label><input type="text" id="end"><br>
@@ -72,7 +70,7 @@
         <div class="inp_wrapper">
             <label for="">最大深度：</label><select name="" id="MaxDepth">
                 <option value="10">10</option>
-                <option value="50">50</option>
+                <option value="30">30</option>
             </select>
         </div>
         <div class="inp_wrapper">
@@ -186,7 +184,7 @@
             var xAxisInfo = event.axesInfo[0];
             if (xAxisInfo) {
                 var dimension = xAxisInfo.value + 1;
-                myChart.setOption({
+                ct.setOption({
                     series: {
                         id: 'pie',
                         label: {
@@ -399,7 +397,7 @@
         ct.setOption(option);
     }
 
-    function displayMysqlDataByRoom() {
+    function displayDataByRoom() {
         var xmlhttp = new XMLHttpRequest();
         xmlhttp.onreadystatechange = function () {
             if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
@@ -465,8 +463,7 @@
                 labelList = msg.labelList;
                 acc = msg.acc;
                 recall = msg.recall;
-                right = msg.rightNum;
-                console.log(right);
+                right = msg.rightMsg;
                 drawMLPicture();
                 document.getElementById('display').innerText = right
 
@@ -503,12 +500,12 @@
                 }],
             series: [
                 {
-                    name: '正确率',
+                    name: '精确率',
                     type: 'bar',
                     data: acc
                 },
                 {
-                    name: '召回率率',
+                    name: '召回率',
                     type: 'bar',
                     data: recall
                 }

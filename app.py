@@ -70,7 +70,7 @@ def displayDataByDay():
     dataCount = []
     day = str(request.data).split("'")[1].split('&')[0].split('=')[1]
     sql = 'SELECT game_name,MAX(`max(room_hot)`),ROUND(AVG(`avg(room_hot)`)),SUM(`sum(room_hot)`), SUM(`count(room_hot)`) FROM' \
-          ' (SELECT * FROM room_hot_analsis WHERE day="' + day + '" and `count(room_hot)` >100) as tmp GROUP BY game_name ORDER BY SUM(`count(room_hot)`) desc'
+          ' (SELECT * FROM room_hot_analsis WHERE day="' + day + '" and `count(room_hot)` >250) as tmp GROUP BY game_name ORDER BY SUM(`count(room_hot)`) desc'
     for i in toSQL(sql):
         gameName.append(str(i[0]))
         dataMax.append(str(i[1]))
@@ -121,14 +121,17 @@ def MLdata():
     result.clear()
     sumData = 0
     right = 0
-    rightNum = ''
+    rightMsg = ''
     # 获取参数
+    tableName = ''
     requestData = str(request.data)
-    print(requestData)
     if len(requestData.split("&")) >= 2:
-        tableName = 'rfmlres'
-        tableName = tableName + requestData.split("'")[1].split('&')[0].split('=')[1] + \
-                    requestData.split("'")[1].split('&')[1].split('=')[1]
+        if len(requestData.split("&")) == 2:
+            tableName = 'rfmlres'
+            tableName = tableName + requestData.split("'")[1].split('&')[0].split('=')[1] + \
+                        requestData.split("'")[1].split('&')[1].split('=')[1]
+        else:
+            tableName = requestData.split("'")[1].split('&')[0].split('=')[1]
     else:
         tableName = 'lrmlres'
         tableName = tableName + requestData.split("'")[1].split('&')[0].split('=')[1]
@@ -141,9 +144,9 @@ def MLdata():
             sumData = sumData + num
             if label == prediction:
                 right = right + num
-    rightNum = rightNum + '正确率：' + str(right / sumData) + '\n'
-    rightNum = rightNum + '样本总数：' + str(sumData) + '\n'
-    rightNum = rightNum + '预测正确的数量：' + str(right) + '\n'
+    rightMsg = rightMsg + '正确率：' + str(right / sumData) + '\n'
+    rightMsg = rightMsg + '样本总数：' + str(sumData) + '\n'
+    rightMsg = rightMsg + '预测正确的数量：' + str(right) + '\n'
     print('正确率：' + str(right / sumData))
     print('样本总数：' + str(sumData))
     print('预测正确的数量：' + str(right))
@@ -175,16 +178,36 @@ def MLdata():
         else:
             recall.append(0)
             print('标签' + str(label) + '在测试中没有预测该标签的值')
-    result['rightNum'] = rightNum
+    rightMsg = rightMsg + '0：无热度  1：高热度  2：顶级热度 3：一般热度 4：低热度  5：超高热度' + '\n'
+    rightMsg = rightMsg + '红色：召回 藏青色：精确率' + '\n'
+    result['rightMsg'] = rightMsg
     result['acc'] = acc
     result['recall'] = recall
     result['labelList'] = labelList
     return result
 
 
-@app.route('/displayMysqlDatabyroom', methods=['POST'])
+# 历史代码
+@app.route('/test', methods=['POST'])
 @cross_origin()
-def displayMysqlDatabyroom():
+def test():
+    result.clear()
+    LabelList = []
+    numList = []
+    chance = {0: '无热度', 1: '高热度', 2: '顶级热度', 3: '一般热度', 4: '低热度', 5: '超高热度'}
+    for i in range(5):
+        sql = 'SELECT count(*) FROM `lrmlres2000` WHERE label=' + str(i)
+        num = int(toSQL(sql)[0][0])
+        LabelList.append(chance.get(i))
+        numList.append(num)
+    result['gameName'] = LabelList
+    result['dataCount'] = numList
+    return result
+
+
+@app.route('/displayDatabyroom', methods=['POST'])
+@cross_origin()
+def displayDatabyroom():
     result.clear()
     gameHot = []
     gametime = []

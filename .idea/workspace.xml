@@ -4,8 +4,9 @@
     <list default="true" id="ed841c26-2694-4120-9dff-0ce1e79eaeec" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/dealFile.py" beforeDir="false" afterPath="$PROJECT_DIR$/dealFile.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/main.css" beforeDir="false" afterPath="$PROJECT_DIR$/templates/main.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/spark处理代码/MLTest.scala" beforeDir="false" afterPath="$PROJECT_DIR$/spark处理代码/MLTest.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/spark处理代码/WriteToMysql.scala" beforeDir="false" afterPath="$PROJECT_DIR$/spark处理代码/WriteToMysql.scala" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/test.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/test.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/upload.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/upload.html" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -62,6 +63,28 @@
     </option>
   </component>
   <component name="RunManager" selected="Flask server.huyaproject">
+    <configuration name="51job" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="huyaproject" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="G:/" />
+      <option name="IS_MODULE_SDK" value="false" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
+      <option name="SCRIPT_NAME" value="G:/51job.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="true" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="KafkaConsumer" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="huyaproject" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -128,7 +151,7 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="kafkaC" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="huyacrwaler" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="huyaproject" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -141,7 +164,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/kafkaC.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/huyacrwaler.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="true" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -172,28 +195,6 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <configuration name="tt" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="huyaproject" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tt.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="true" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-      <option name="REDIRECT_INPUT" value="false" />
-      <option name="INPUT_FILE" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="huyaproject" type="Python.FlaskServer">
       <module name="huyaproject" />
       <option name="target" value="$PROJECT_DIR$/app.py" />
@@ -211,11 +212,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.huyacrwaler" />
+        <item itemvalue="Python.51job" />
         <item itemvalue="Python.dealFile" />
         <item itemvalue="Python.test" />
         <item itemvalue="Python.KafkaConsumer" />
-        <item itemvalue="Python.kafkaC" />
-        <item itemvalue="Python.tt" />
       </list>
     </recent_temporary>
   </component>
@@ -357,6 +358,20 @@
       <workItem from="1590461628308" duration="8164000" />
       <workItem from="1590630493544" duration="4232000" />
       <workItem from="1590650066477" duration="919000" />
+      <workItem from="1590744652724" duration="967000" />
+      <workItem from="1590891182085" duration="2816000" />
+      <workItem from="1591057824961" duration="6188000" />
+      <workItem from="1591177935412" duration="594000" />
+      <workItem from="1591233816212" duration="87000" />
+      <workItem from="1591238009748" duration="1807000" />
+      <workItem from="1591672547523" duration="1668000" />
+      <workItem from="1591853413373" duration="1277000" />
+      <workItem from="1591866778093" duration="814000" />
+      <workItem from="1591929039042" duration="2850000" />
+      <workItem from="1591953371391" duration="7026000" />
+      <workItem from="1592011525573" duration="125000" />
+      <workItem from="1592032894796" duration="729000" />
+      <workItem from="1592273164223" duration="1168000" />
     </task>
     <servers />
   </component>
@@ -380,11 +395,12 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/huyaproject$huyaproject.coverage" NAME="huyaproject Coverage Results" MODIFIED="1590634431479" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/huyaproject$huyaproject.coverage" NAME="huyaproject Coverage Results" MODIFIED="1592274114859" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/huyaproject$test1.coverage" NAME="test1 Coverage Results" MODIFIED="1577094984766" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/huyaproject$test.coverage" NAME="test Coverage Results" MODIFIED="1588131334334" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/huyaproject$dealFile.coverage" NAME="dealFile Coverage Results" MODIFIED="1589780630053" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/huyaproject$huyacrwaler.coverage" NAME="huyacrwaler Coverage Results" MODIFIED="1582077215130" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/huyaproject$11.coverage" NAME="11 Coverage Results" MODIFIED="1573723383343" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/huyaproject$51job.coverage" NAME="51job Coverage Results" MODIFIED="1591965440648" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="G:/" />
   </component>
 </project>

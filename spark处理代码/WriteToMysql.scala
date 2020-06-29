@@ -54,16 +54,16 @@ object WriteToMysql {
     val afterDF = dataDF.groupBy("day", "hour", "room_id", "game_name", "room_name", "gamer_name")
       .agg("room_hot" -> "max").withColumnRenamed("max(room_hot)", "room_hot")
     //写入已存在的数据库
-    writeToMysql(afterDF, "127.0.0.1", "basedata")
-    println("写入完成")
+//    writeToMysql(afterDF, "127.0.0.1", "basedata")
+//    println("写入完成")
     //处理数据根据直播分类计算统计数据并写入数据库
-    val analsisDF = afterDF.groupBy("day", "hour", "game_name").agg("room_hot" -> "max", "room_hot" -> "min", "room_hot" -> "avg", "room_hot" -> "sum", "room_hot" -> "count")
+    val analsisDF = afterDF.groupBy("day", "hour", "room_id").agg("room_hot" -> "max", "room_hot" -> "min", "room_hot" -> "avg", "room_hot" -> "sum", "room_hot" -> "count")
     //写入时自动新建数据库
     val prop = new Properties()
     prop.put("user", "hadoop")
     prop.put("password", "Hadoop@123")
     prop.put("driver", "com.mysql.jdbc.Driver")
-    analsisDF.write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "room_hot_analsis", prop)
+    analsisDF.write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "room_id_data", prop)
   }
 
   //从统计好的直播分类中做每天的数据指标做统计
@@ -102,26 +102,20 @@ object WriteToMysql {
     val sc=new SparkContext(conf)
     val spark = SparkSession.builder().config(conf).getOrCreate()
     val data = sc.textFile("e:\\share\\data")
-    val RDD = data.map(line => line.split("&")).filter(line => line.length == 8)
-    val rowRDD = RDD.map(p => Row(p(0), p(1).toInt, p(2), p(4), p(5).toInt, p(6), p(7).toInt))
-    val schema = StructType(List(StructField("day", StringType, true), StructField("hour", IntegerType, true), StructField("game_name", StringType, true)
-      , StructField("room_name", StringType, true), StructField("room_id", IntegerType, true), StructField("gamer_name", StringType, true)
-      , StructField("room_hot", IntegerType, true)))
-    val dataDF = spark.createDataFrame(rowRDD, schema)
     //清洗数据除去歧义数据选最大值最为标准值
-    val afterDF = dataDF.groupBy("day", "hour", "room_id", "game_name", "room_name", "gamer_name")
-      .agg("room_hot" -> "max").withColumnRenamed("max(room_hot)", "room_hot")
-      .select("room_hot","game_name","day","room_name").filter(line=>line.getInt(0)>=1000000)
-      .select("game_name","room_name").distinct()
+    clearData(spark,sc)
 
-    val prop = new Properties()
-    prop.put("user", "hadoop")
-    prop.put("password", "Hadoop@123")
-    prop.put("driver", "com.mysql.jdbc.Driver")
-    afterDF.write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "TFIDFData", prop)
 
-    //写入已存在的数据库
-//    writeToMysql(afterDF, "127.0.0.1", "test")
-    //    dealTable(spark,"test")
+    //处理为TF-IDF处理的信息
+//    val afterDF = dataDF.groupBy("day", "hour", "room_id", "game_name", "room_name", "gamer_name")
+//      .agg("room_hot" -> "max").withColumnRenamed("max(room_hot)", "room_hot")
+//      .filter(line=>line.getInt(6)>=500000)
+//      .select("game_name","day","room_name").distinct()
+//    val prop = new Properties()
+//    prop.put("user", "hadoop")
+//    prop.put("password", "Hadoop@123")
+//    prop.put("driver", "com.mysql.jdbc.Driver")
+//    afterDF.write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "TFIDFData", prop)
+
   }
 }

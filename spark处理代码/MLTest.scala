@@ -3,47 +3,36 @@ import java.util.{Calendar, Properties}
 
 import org.apache.log4j.{Level, Logger}
 import org.apache.spark.ml.{Pipeline, PipelineModel}
-import org.apache.spark.ml.classification.LogisticRegression
+import org.apache.spark.ml.classification.{LogisticRegression, RandomForestClassifier}
 import org.apache.spark.ml.clustering.{KMeans, KMeansModel}
-import org.apache.spark.ml.feature.{QuantileDiscretizer, StringIndexer, VectorAssembler}
-import org.apache.spark.sql.types.{BooleanType, IntegerType, StringType, StructField, StructType}
+import org.apache.spark.ml.feature.{CountVectorizer, HashingTF, IDF, QuantileDiscretizer, StringIndexer, Tokenizer, VectorAssembler}
+import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.apache.spark.{SparkConf, SparkContext, sql}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
+import scala.language.implicitConversions
+import org.apache.spark.ml.linalg.{Vector, Vectors}
+import org.apache.spark.rdd.RDD
 
 object MLTest {
   Logger.getLogger("org.apache.spark").setLevel(Level.WARN)
   Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
 
-  def dealData(sc: SparkContext, spark: SparkSession, path: String): DataFrame = {
-    val data = sc.textFile(path)
-    val RDD = data.map(line => line.split("&")).filter(line => line.length == 8)
-    //    val testRDD=RDD.map(line=>line(0))
-    val rowRDD = RDD.map(p => Row(p(0),whichDayInWeek(p(0)),isFestival(p(0)),isWeekend(p(0)), p(1).toInt, p(2), p(4), p(5).toInt, p(6), p(7).toInt))
-    val schema = StructType(List(StructField("day",StringType,true),StructField("week", IntegerType, true),StructField("Festival", StringType, true)
-      ,StructField("isWeekend",IntegerType,true), StructField("hour", IntegerType, true), StructField("game_name", StringType, true)
+
+  def MakeDF(rowRDD: RDD[Row], spark: SparkSession): DataFrame = {
+    val schema = StructType(List(StructField("day", StringType, true), StructField("week", IntegerType, true), StructField("Festival", StringType, true)
+      , StructField("isWeekend", IntegerType, true), StructField("hour", IntegerType, true), StructField("game_name", StringType, true)
       , StructField("room_name", StringType, true), StructField("room_id", IntegerType, true), StructField("gamer_name", StringType, true)
       , StructField("room_hot", IntegerType, true)))
     val dataDF = spark.createDataFrame(rowRDD, schema)
-    val afterDF = dataDF.groupBy("day","week", "hour", "room_id", "game_name", "room_name", "gamer_name","Festival","isWeekend")
+    val afterDF = dataDF.groupBy("day", "week", "hour", "room_id", "game_name", "room_name", "gamer_name", "Festival", "isWeekend")
       .agg("room_hot" -> "max").withColumnRenamed("max(room_hot)", "room_hot")
     afterDF
   }
 
+
   def ReadMysqlData(spark: SparkSession, ipaddr: String, table_name: String): DataFrame = {
-    //    val dataDF = spark.read.format("jdbc").
-    //      option("url", "jdbc:mysql://" + ipaddr + ":3306/huya?useUnicode=true&characterEncoding=UTF-8").
-    //      option("driver", "com.mysql.jdbc.Driver").
-    //      option("dbtable", table_name).
-    //      option("user", "hadoop").
-    //      option("password", "Hadoop@123").
-    //      option("numPartitions ","10").
-    //      option("partitionColumn ","huor").
-    //      option("lowerBound ","0").
-    //      option("upperBound ","24").
-    //      load()
     val url: String = "jdbc:mysql://localhost:3306/huya?useUnicode=true&characterEncoding=UTF-8"
-    val table = "MLdata"
     val colName: String = "hour"
     val lowerBound = 0
     val upperBound = 23
@@ -52,9 +41,10 @@ object MLTest {
     properties.setProperty("user", "hadoop")
     properties.setProperty("password", "Hadoop@123")
     properties.setProperty("driver", "com.mysql.jdbc.Driver")
-    val dataDF: DataFrame = spark.read.jdbc(url, table, colName, lowerBound, upperBound, numPartions, properties)
+    val dataDF: DataFrame = spark.read.jdbc(url, table_name, colName, lowerBound, upperBound, numPartions, properties)
     dataDF
   }
+
 
   //根据日期判断是周几
   def whichDayInWeek(day: String): Int = {
@@ -68,30 +58,31 @@ object MLTest {
   def isWeekend(day: String): Int = {
     val fm = new SimpleDateFormat("yyyy-MM-dd").parse(day)
     val dayOfWeek = Calendar.getInstance()
-    var res=0
+    var res = 0
     dayOfWeek.setTime(fm) //为什么用val可以？（待解决）
-    val week=dayOfWeek.get(Calendar.DAY_OF_WEEK)
-    if(week == 6 || week == 1 || week == 7) {
-      res=1
-    }else{
-      res=2
+    val week = dayOfWeek.get(Calendar.DAY_OF_WEEK)
+    if (week == 6 || week == 1 || week == 7) {
+      res = 1
+    } else {
+      res = 2
     }
-   res
+    res
   }
+
   //根据日期判断是什么节日
-  def isFestival(day: String):String={
-    val res=day match{
-      case "2020-01-01"=> "元旦"
-      case "2019-12-24"=>"平安夜"
-      case "2019-12-25"=>"圣诞节"
-      case "2020-01-24"=>"除夕"
-      case "2020-02-08"=>"元宵"
-      case "2020-02-14"=>"情人节"
-      case "2020-03-12"=>"植树节"
-      case "2020-04-04"=>"清明节"
-      case "2020-04-05"=>"清明节"
-      case "2020-04-06"=>"清明节"
-      case _=>"无节日"
+  def isFestival(day: String): String = {
+    val res = day match {
+      case "2020-01-01" => "元旦"
+      case "2019-12-24" => "平安夜"
+      case "2019-12-25" => "圣诞节"
+      case "2020-01-24" => "除夕"
+      case "2020-02-08" => "元宵"
+      case "2020-02-14" => "情人节"
+      case "2020-03-12" => "植树节"
+      case "2020-04-04" => "清明节"
+      case "2020-04-05" => "清明节"
+      case "2020-04-06" => "清明节"
+      case _ => "无节日"
     }
     res
   }
@@ -103,17 +94,45 @@ object MLTest {
     prop.put("driver", "com.mysql.jdbc.Driver")
     val conf = new SparkConf().setMaster("local[8]").setAppName("appName")
     val sc = new SparkContext(conf)
-    val spark = SparkSession.builder().config(conf).config("spark.sql.broadcastTimeout", "36000").
-      config("spark.debug.maxToStringFields", "100").getOrCreate()
-    //    val dataDF = ReadMysqlData(spark, "localhost", "test")
-//    val trainDF = dealData(sc, spark, "e:\\share\\data2\\").select("day", "hour", "room_id", "game_name", "room_hot")
-    val trainDF = dealData(sc, spark, "e:\\share\\data1\\").select("day", "week","hour", "room_id", "game_name", "room_hot","Festival","isWeekend")
+    val path = "e:\\share\\data2"
+    //    val path="e:\\share\\mlDataTest.txt"
+    val data = sc.textFile(path)
+    val RDD = data.map(line => line.split("&")).filter(line => line.length == 8)
+    val IDArr = Array(660000, 666888, 660001, 521000, 333003, 660002, 688, 52033, 321321, 290987, 10660, 52033, 103444, 523980, 1352977, 11342412,
+      880205, 660004, 7911, 199300, 9986, 417964, 13579, 5269, 102411, 102491, 520637, 199300, 110120, 122294)
+    val spark = SparkSession.builder().config(conf).getOrCreate()
+    val rowRDD = RDD.map(p => Row(p(0), whichDayInWeek(p(0)), isFestival(p(0)), isWeekend(p(0)), p(1).toInt, p(2), p(4), p(5).toInt, p(6), p(7).toInt))
+    //    MakeDF(rowRDD, spark).select("day","week", "hour", "room_id", "game_name", "Festival", "isWeekend", "room_hot").filter(line=>IDArr.contains(line.getInt(3)))
+    //预测的DF
+    val testDF = ReadMysqlData(spark, "localhost", "lrdata")
+    testDF.show()
     val ve = new VectorAssembler().setInputCols(Array("room_hot")).setOutputCol("Feature_room_hot")
-    val useDF = ve.transform(trainDF)
-    val model=KMeansModel.load("e:\\share\\model\\KMeans")
-    val AFKMeansDF=model.transform(useDF.filter(line=>line.getInt(3)==660000))
-    test3(AFKMeansDF).show(1000,truncate = false)
-//    res.show(1000, truncate = false)
+    val useDF = ve.transform(testDF)
+    val model = KMeansModel.load("e:\\share\\model\\KMeans")
+    val AFKMeansDF = model.transform(useDF)
+    //    val LRmodel = PipelineModel.load("e:\\share\\model\\LogisticRegressionModel")
+    //    val res = LRmodel.transform(AFKMeansDF)
+    test5(AFKMeansDF).select("week","hour","room_id","game_name","Festival","isWeekend","label","prediction")
+      .write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "rfmlres5030", prop)
+
+
+    //    res.show()
+    //    val res=test3(AFKMeansDF)
+    //    res.show(1000)
+    //    val writerDF=res.select("week","hour","room_id","game_name","Festival","isWeekend","label","prediction")
+    //    writerDF.write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "LRMLres5", prop)
+    //    test5(AFKMeansDF).write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "RfMLres5010", prop)
+
+
+    //    TF-IDF的DF
+    //    val data = sc.textFile("E:\\share\\TFIDFData\\英雄联盟.txt")
+    //    val RowRDD = data.map(line => line.split("&")).map(line => Row(line(0), line(1)))
+    //    val schema = StructType(List(StructField("game_name", StringType, true), StructField("sentence", StringType, true)))
+    //    val DF = spark.createDataFrame(RowRDD, schema)
+    //    DF.show()
+
+
+
   }
 
 
@@ -136,37 +155,69 @@ object MLTest {
     //model.write.overwrite().save("e:\\share\\model\\KMeans")
     //val model=KMeansModel.load("e:\\share\\model\\KMeans")
     //打印模型信息
-    for(i<-model.clusterCenters){
-      println("getDistanceMeasure：  "+i)
+    for (i <- model.clusterCenters) {
+      println("getDistanceMeasure：  " + i)
     }
     model.transform(useDF)
   }
+
   //根据K-means聚类做最终ML表
   //逻辑回归预测直播热度
   def test3(df: DataFrame): DataFrame = {
     //转换game_name列
-    val AFname = new StringIndexer().setInputCol("game_name").setOutputCol("Feature_game_name").fit(df).transform(df)
-    //转换day列
-    val AFday = new StringIndexer().setInputCol("day").setOutputCol("Feature_day").fit(AFname).transform(AFname)
+    val ALname = new StringIndexer().setInputCol("game_name").setOutputCol("Feature_game_name")
     //转换room_id列
-    val AFroom_id = new StringIndexer().setInputCol("room_id").setOutputCol("Feature_room_id").fit(AFday).transform(AFday)
+    val ALroom_id = new StringIndexer().setInputCol("room_id").setOutputCol("Feature_room_id")
     //转换hour列
-    val AFhour = new StringIndexer().setInputCol("hour").setOutputCol("Feature_hour").fit(AFroom_id).transform(AFroom_id)
+    val ALhour = new StringIndexer().setInputCol("hour").setOutputCol("Feature_hour")
     //转换节日列
-    val FinalDF= new StringIndexer().setInputCol("Festival").setOutputCol("Feature_Festival").fit(AFhour).transform(AFhour)
-    val ve = new VectorAssembler().setInputCols(Array("Feature_game_name", "Feature_day", "Feature_room_id", "Feature_hour","Feature_Festival","week","isWeekend")).setOutputCol("features")
-    val useDF = ve.transform(FinalDF)
-    val lr = new LogisticRegression().setMaxIter(20).setRegParam(0.0).setElasticNetParam(0.8).setFeaturesCol("features").setLabelCol("label")
-    val model = lr.fit(useDF)
+    val ALFestival = new StringIndexer().setInputCol("Festival").setOutputCol("Feature_Festival")
+    val ve = new VectorAssembler().setInputCols(Array("Feature_game_name", "Feature_room_id", "Feature_hour", "Feature_Festival", "week", "isWeekend")).setOutputCol("features")
+    val lr = new LogisticRegression().setMaxIter(200).setRegParam(0.0).setElasticNetParam(0.8).setFeaturesCol("features").setLabelCol("label")
+    val pipeline = new Pipeline().setStages(Array(ALname, ALroom_id, ALhour, ALFestival, ve, lr))
+    val model = pipeline.fit(df)
+    model.transform(df)
+  }
 
-    model.transform(useDF)
+  def test5(dataDF: DataFrame): DataFrame = {
+    val ALname = new StringIndexer().setInputCol("game_name").setOutputCol("Feature_game_name")
+    //转换room_id列
+    val ALroom_id = new StringIndexer().setInputCol("room_id").setOutputCol("Feature_room_id")
+    //转换hour列
+    val ALhour = new StringIndexer().setInputCol("hour").setOutputCol("Feature_hour")
+    //转换节日列
+    val ALFestival = new StringIndexer().setInputCol("Festival").setOutputCol("Feature_Festival")
+    val ve = new VectorAssembler().setInputCols(Array("Feature_game_name", "Feature_room_id", "Feature_hour", "Feature_Festival", "week", "isWeekend")).setOutputCol("features")
+    val rf = new RandomForestClassifier().setFeaturesCol("features").setLabelCol("label").setNumTrees(50).setMaxDepth(30).setMaxBins(50)
+    val pipeline = new Pipeline().setStages(Array(ALname, ALroom_id, ALhour, ALFestival, ve, rf))
+    val model = pipeline.fit(dataDF)
+    model.transform(dataDF).select("week", "hour", "room_id", "game_name", "Festival", "isWeekend", "label", "prediction")
   }
 
   //TF-IDF热词统计
   def test4(df: DataFrame): Unit = {
+    val dataDF = df
+    //分词器按空格分开句子中词
+    val tokenizer = new Tokenizer().setInputCol("sentence").setOutputCol("words")
+    val wordsData = tokenizer.transform(dataDF)
 
+    //将分好的每次词给予一个hash值作为特征向量
+    // 使用HashTF作为特征转换工具
+    //    val hashingTF = new HashingTF().setInputCol("words").setOutputCol("rawFeatures").setNumFeatures(5000)
+    //    val featurizedData = hashingTF.transform(wordsData)
 
+    //视同CountVectorizer作为转换工具
+    val cvModel = new CountVectorizer().setInputCol("words").setOutputCol("rawFeatures").setVocabSize(8000).setMinDF(3.0).fit(wordsData)
+    val featurizedData = cvModel.transform(wordsData)
+    val voc = cvModel.vocabulary
+    featurizedData.show()
 
+    //将处理好的特征输入IDF算法得到模型
+    val idf = new IDF().setInputCol("rawFeatures").setOutputCol("features")
+    val idfModel = idf.fit(featurizedData)
+    val rData = idfModel.transform(featurizedData).select("features")
+    //    rData.show(100, truncate = false)
 
   }
 }
+

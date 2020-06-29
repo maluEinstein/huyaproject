@@ -6,122 +6,60 @@
     <script src="../static/echarts.min.js"></script>
 </head>
 <body>
-<button onclick="drawchartDataByDay()">查询</button>
+<button onclick="MLdata()">查询</button>
 <div id="chart" style="width:1500px;height:800px;"></div>
+<h1><p id="display"></p></h1>
 <script>
-drawchartDataByDay()
-    function drawchartDataByDay() {
-        var myChart = echarts.init(document.getElementById("chart"));
-            option = {
-                legend: {},
-                tooltip: {
-                    trigger: 'axis',
-                    showContent: false
-                },
-                dataset: {
-                    source: [
-                        ['days', '2020-04-01', '2020-04-02', '2020-04-03', '2020-04-04', '2020-04-05', '2020-04-06', '2020-04-07'],
-                    ['CF手游', 721112540, 738993814, 811601075, 10956582, 879427516, 958904112, 1063703125],
-                    ['lol云顶之弈', 813734644, 736947314, 770877200, 6381373, 808728739, 783577573, 789502267],
-                    ['一起看', 636977702, 650878386, 640277156, 38284749, 601831154, 661936268, 646044233],
-                    ['交友', 2828912397, 2771094947, 2709381741, 91540697, 2636335731, 2866204911, 2864408245],
-                    ['和平精英', 2006632707, 2054581650, 2050591323, 24176270, 2216418742, 2098123665, 2080779817],
-                    ['我的世界', 537418743, 537511727, 544549614, 17656696, 448789872, 518301965, 505039810],
-                    ['星秀', 2333995541, 2372169817, 2320977724, 21231350, 2172452579, 2420587351, 2528030915],
-                    ['王者荣耀', 3855989336, 3758812265, 3689861345, 34071949, 3996484022, 3784214958, 3797047335],
-                    ['穿越火线', 603970232, 600026190, 614326181, 6898295, 621985362, 623780544, 601732795],
-                    ['绝地求生', 997698021, 1131128535, 1079471889, 40917483, 1061018930, 1096361389, 1066701837],
-                    ['英雄联盟', 3068638324, 2722840815, 3008761775, 25169548, 3329445967, 3147024192, 3054767226],
-                    ['魔兽世界', 485139671, 458009021, 437009846, 8061149, 442108431, 418879795, 495645900]
-                    ]
-                },
-                xAxis: {type: 'category'},
-                yAxis: {gridIndex: 0},
-                grid: {top: '55%'},
-                series: [
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {type: 'line', smooth: true, seriesLayoutBy: 'row'},
-                    {
-                        type: 'pie',
-                        id: 'pie',
-                        radius: '30%',
-                        center: ['50%', '25%'],
-                        label: {
-                            formatter: '{b}: {@2020-04-01} ({d}%)'
-                        },
-                        encode: {
-                            itemName: 'days',
-                            value: '2020-04-01',
-                            tooltip: '2020-04-01'
-                        }
-                    }
-                ]
-            };
-            myChart.on('updateAxisPointer', function (event) {
-                var xAxisInfo = event.axesInfo[0];
-                if (xAxisInfo) {
-                    var dimension = xAxisInfo.value+1;
-                    myChart.setOption({
-                        series: {
-                            id: 'pie',
-                            label: {
-                                formatter: '{b}: {@[' + dimension + ']} ({d}%)'
-                            },
-                            encode: {
-                                value: dimension,
-                                tooltip: dimension
-                            }
-                        }
-                    });
+    gameName=[];
+    gameData=[];
+    dataCount=[];
+    function MLdata() {
+        var xmlhttp = new XMLHttpRequest();
+        right = "";
+        xmlhttp.onreadystatechange = function () {
+            if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+                msg = JSON.parse(xmlhttp.responseText);
+                labelList = msg.labelList;
+                acc = msg.acc;
+                gameName = msg.gameName;
+                dataCount = msg.dataCount;
+                console.log(gameName)
+                console.log(dataCount)
+
+                 for (i = 0; i < gameName.length; i++) {
+                    map = {};
+                    map['value'] = dataCount[i];
+                    map['name'] = gameName[i];
+                    gameData.push(map)
                 }
-            });
-            myChart.setOption(option);
+                drawMLPicture();
+            }
+        };
+        xmlhttp.open('post', 'http://127.0.0.1:5000/test');
+        xmlhttp.send("");
     }
-
-
-    function drwachartTest() {
-        var ct = echarts.init(document.getElementById("chart"));
-        option = {
-            title: {
-                text: '直播间热度档次统计图',
-                subtext: '利用K-Means算法打上标签统计',
-                left: 'center'
-            },
+    function drawMLPicture() {
+       var ct = echarts.init(document.getElementById("chart"));
+        var option = {
+            title: {},
             tooltip: {
                 trigger: 'item',
-                formatter: '{a} <br/>{b} : {c} ({d}%)'
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
             },
             legend: {
+                type: 'scroll',
                 orient: 'vertical',
-                left: 'left',
-                data: ['无热度', '低热度', '中等热度', '较高热度', '热门热度', "顶级热度"]
+                left: 10,
+                data: gameName
             },
             series: [
                 {
                     name: '热度',
                     type: 'pie',
                     radius: '55%',
-                    center: ['50%', '60%'],
-                    data: [
-                        {value: 3264266, name: '无热度'},
-                        {value: 154134, name: '低热度'},
-                        {value: 11014, name: '中等热度'},
-                        {value: 4063, name: '较高热度'},
-                        {value: 377, name: '热门热度'},
-                        {value: 33, name: '顶级热度'}
-                    ],
-                    emphasis: {
-                        itemStyle: {
+                    data: gameData,
+                    itemStyle: {
+                        emphasis: {
                             shadowBlur: 10,
                             shadowOffsetX: 0,
                             shadowColor: 'rgba(0, 0, 0, 0.5)'
@@ -130,8 +68,6 @@ drawchartDataByDay()
                 }
             ]
         };
-
-
         ct.setOption(option);
     }
 
