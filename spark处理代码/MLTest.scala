@@ -19,7 +19,10 @@ object MLTest {
   Logger.getLogger("org.eclipse.jetty.server").setLevel(Level.OFF)
 
 
-  def MakeDF(rowRDD: RDD[Row], spark: SparkSession): DataFrame = {
+  def MakeDF(path: String, spark: SparkSession, sc: SparkContext): DataFrame = {
+    val data = sc.textFile(path)
+    val RDD = data.map(line => line.split("&")).filter(line => line.length == 8)
+    val rowRDD = RDD.map(p => Row(p(0), whichDayInWeek(p(0)), isFestival(p(0)), isWeekend(p(0)), p(1).toInt, p(2), p(4), p(5).toInt, p(6), p(7).toInt))
     val schema = StructType(List(StructField("day", StringType, true), StructField("week", IntegerType, true), StructField("Festival", StringType, true)
       , StructField("isWeekend", IntegerType, true), StructField("hour", IntegerType, true), StructField("game_name", StringType, true)
       , StructField("room_name", StringType, true), StructField("room_id", IntegerType, true), StructField("gamer_name", StringType, true)
@@ -32,7 +35,7 @@ object MLTest {
 
 
   def ReadMysqlData(spark: SparkSession, ipaddr: String, table_name: String): DataFrame = {
-    val url: String = "jdbc:mysql://localhost:3306/huya?useUnicode=true&characterEncoding=UTF-8"
+    val url: String = "jdbc:mysql://localhost:3306/huya?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT"
     val colName: String = "hour"
     val lowerBound = 0
     val upperBound = 23
@@ -94,34 +97,36 @@ object MLTest {
     prop.put("driver", "com.mysql.jdbc.Driver")
     val conf = new SparkConf().setMaster("local[8]").setAppName("appName")
     val sc = new SparkContext(conf)
-    val path = "e:\\share\\data2"
-    //    val path="e:\\share\\mlDataTest.txt"
-    val data = sc.textFile(path)
-    val RDD = data.map(line => line.split("&")).filter(line => line.length == 8)
-    val IDArr = Array(660000, 666888, 660001, 521000, 333003, 660002, 688, 52033, 321321, 290987, 10660, 52033, 103444, 523980, 1352977, 11342412,
-      880205, 660004, 7911, 199300, 9986, 417964, 13579, 5269, 102411, 102491, 520637, 199300, 110120, 122294)
     val spark = SparkSession.builder().config(conf).getOrCreate()
-    val rowRDD = RDD.map(p => Row(p(0), whichDayInWeek(p(0)), isFestival(p(0)), isWeekend(p(0)), p(1).toInt, p(2), p(4), p(5).toInt, p(6), p(7).toInt))
-    //    MakeDF(rowRDD, spark).select("day","week", "hour", "room_id", "game_name", "Festival", "isWeekend", "room_hot").filter(line=>IDArr.contains(line.getInt(3)))
-    //预测的DF
-    val testDF = ReadMysqlData(spark, "localhost", "lrdata")
-    testDF.show()
-    val ve = new VectorAssembler().setInputCols(Array("room_hot")).setOutputCol("Feature_room_hot")
-    val useDF = ve.transform(testDF)
-    val model = KMeansModel.load("e:\\share\\model\\KMeans")
-    val AFKMeansDF = model.transform(useDF)
-    //    val LRmodel = PipelineModel.load("e:\\share\\model\\LogisticRegressionModel")
-    //    val res = LRmodel.transform(AFKMeansDF)
-    test5(AFKMeansDF).select("week","hour","room_id","game_name","Festival","isWeekend","label","prediction")
-      .write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "rfmlres5030", prop)
+    //从文件中新建DF
+    //    val IDArr = Array(660000, 666888, 660001, 521000, 333003, 660002, 688, 52033, 321321, 290987, 10660, 52033, 103444, 523980, 1352977, 11342412,
+    //      880205, 660004, 7911, 199300, 9986, 417964, 13579, 5269, 102411, 102491, 520637, 199300, 110120, 122294)
+    //   val useDF= MakeDF("E:\\share\\data",spark, sc).select("day", "week", "hour", "room_id", "game_name", "Festival", "isWeekend", "room_hot")
+    //      .filter(line => IDArr.contains(line.getInt(3)))
+
+    //从数据库中读取DF
+        val useDF = ReadMysqlData(spark, "localhost", "testdata")
+        useDF.show()
 
 
-    //    res.show()
-    //    val res=test3(AFKMeansDF)
-    //    res.show(1000)
-    //    val writerDF=res.select("week","hour","room_id","game_name","Festival","isWeekend","label","prediction")
-    //    writerDF.write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "LRMLres5", prop)
-    //    test5(AFKMeansDF).write.jdbc("jdbc:mysql://localhost:3306/huya?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "RfMLres5010", prop)
+    //使用训练好的KMeans模型打标签
+        val model = PipelineModel.load("e:\\share\\model\\KMeans")
+        val AFKMeansDF = model.transform(useDF)
+
+    //利用逻辑回归训练模型
+    //MyLogisticRegression(AFKMeansDF,"e:\\share\\model\\LogisticRegressionModel")
+    val LRmodel = PipelineModel.load("e:\\share\\model\\LogisticRegressionModel")
+     val res = LRmodel.transform(AFKMeansDF)
+
+    //利用随机森林训练模型
+    // MyRandomForest(AFKMeansDF, "e:\\share\\model\\RandomForest")
+    // val RFmodel = PipelineModel.load("e:\\share\\model\\RandomForest")
+    // val res = RFmodel.transform(AFKMeansDF)
+
+    //模型输出展示和写入数据库
+        res.show(1000, truncate = false)
+
+    //    res.select("week", "hour", "room_id", "game_name", "Festival", "isWeekend", "label", "prediction").write.jdbc("jdbc:mysql://localhost:3306/huya?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT", "testrf", prop)
 
 
     //    TF-IDF的DF
@@ -130,40 +135,34 @@ object MLTest {
     //    val schema = StructType(List(StructField("game_name", StringType, true), StructField("sentence", StringType, true)))
     //    val DF = spark.createDataFrame(RowRDD, schema)
     //    DF.show()
-
-
-
   }
 
 
   //QuantileDiscretizer分类算法
-  def test1(dataDF: DataFrame): DataFrame = {
+  def MyQuantileDiscretizer(dataDF: DataFrame): DataFrame = {
     val discretizer = new QuantileDiscretizer().setInputCol("room_hot").setOutputCol("label").setNumBuckets(20)
     val model = discretizer.fit(dataDF)
     model.transform(dataDF)
   }
 
   //K-means聚类算法
-  def test2(df: DataFrame): DataFrame = {
+  def MyKmeans(df: DataFrame): DataFrame = {
     //做一步特征处理吧热度信息制作成特诊向量输入模型
     val ve = new VectorAssembler().setInputCols(Array("room_hot")).setOutputCol("Feature_room_hot")
-    val useDF = ve.transform(df)
     val discretizer = new KMeans().setK(6).setFeaturesCol("Feature_room_hot").setPredictionCol("label").setMaxIter(1000)
     //训练模型
-    val model = discretizer.fit(useDF)
+    val pipeline = new Pipeline().setStages(Array(ve, discretizer))
+    val model = pipeline.fit(df)
     //模型的保存和加载
-    //model.write.overwrite().save("e:\\share\\model\\KMeans")
+    model.write.overwrite().save("e:\\share\\model\\KMeans")
     //val model=KMeansModel.load("e:\\share\\model\\KMeans")
     //打印模型信息
-    for (i <- model.clusterCenters) {
-      println("getDistanceMeasure：  " + i)
-    }
-    model.transform(useDF)
+    model.transform(df)
   }
 
   //根据K-means聚类做最终ML表
   //逻辑回归预测直播热度
-  def test3(df: DataFrame): DataFrame = {
+  def MyLogisticRegression(df: DataFrame, Path: String): DataFrame = {
     //转换game_name列
     val ALname = new StringIndexer().setInputCol("game_name").setOutputCol("Feature_game_name")
     //转换room_id列
@@ -176,10 +175,11 @@ object MLTest {
     val lr = new LogisticRegression().setMaxIter(200).setRegParam(0.0).setElasticNetParam(0.8).setFeaturesCol("features").setLabelCol("label")
     val pipeline = new Pipeline().setStages(Array(ALname, ALroom_id, ALhour, ALFestival, ve, lr))
     val model = pipeline.fit(df)
+    model.save(Path)
     model.transform(df)
   }
 
-  def test5(dataDF: DataFrame): DataFrame = {
+  def MyRandomForest(dataDF: DataFrame, Path: String): DataFrame = {
     val ALname = new StringIndexer().setInputCol("game_name").setOutputCol("Feature_game_name")
     //转换room_id列
     val ALroom_id = new StringIndexer().setInputCol("room_id").setOutputCol("Feature_room_id")
@@ -191,6 +191,7 @@ object MLTest {
     val rf = new RandomForestClassifier().setFeaturesCol("features").setLabelCol("label").setNumTrees(50).setMaxDepth(30).setMaxBins(50)
     val pipeline = new Pipeline().setStages(Array(ALname, ALroom_id, ALhour, ALFestival, ve, rf))
     val model = pipeline.fit(dataDF)
+    //    model.save(Path)
     model.transform(dataDF).select("week", "hour", "room_id", "game_name", "Festival", "isWeekend", "label", "prediction")
   }
 
